@@ -1,6 +1,6 @@
 ( function( wp ) {
 	const { registerBlockType } = wp.blocks;
-	const { useBlockProps, InspectorControls, PanelColorSettings } = wp.blockEditor;
+	const { useBlockProps, InspectorControls } = wp.blockEditor;
 	const { PanelBody, ToggleControl, SelectControl, TextControl } = wp.components;
 	const { __ } = wp.i18n;
 	const { createElement: el, Fragment } = wp.element;
@@ -58,25 +58,15 @@
 
 		edit: function( props ) {
 			const { attributes, setAttributes } = props;
-			const {
-				copyButtonBgColor,
-				copyButtonTextColor,
-				viewButtonBgColor,
-				viewButtonTextColor,
-				showIcons,
-				layout,
-				copyButtonLabel,
-				viewButtonLabel
-			} = attributes;
+			const { showIcons, layout, copyButtonLabel, viewButtonLabel } = attributes;
 
 			const blockProps = useBlockProps( {
 				className: 'wp-block-tgp-llm-buttons ' + ( layout === 'stack' ? 'is-layout-stack' : 'is-layout-row' )
 			} );
 
 			return el( Fragment, {},
-				// Inspector Controls (Sidebar)
+				// Inspector Controls (Sidebar) - only custom settings, colors/typography handled by Block Supports
 				el( InspectorControls, {},
-					// Settings Panel
 					el( PanelBody, {
 						title: __( 'Button Settings', 'tgp-llms-txt' ),
 						initialOpen: true
@@ -113,71 +103,21 @@
 								setAttributes( { viewButtonLabel: value } );
 							}
 						} )
-					),
-					// Copy Button Colors
-					el( PanelColorSettings, {
-						title: __( 'Copy Button Colors', 'tgp-llms-txt' ),
-						initialOpen: false,
-						colorSettings: [
-							{
-								value: copyButtonBgColor,
-								onChange: function( value ) {
-									setAttributes( { copyButtonBgColor: value } );
-								},
-								label: __( 'Background', 'tgp-llms-txt' )
-							},
-							{
-								value: copyButtonTextColor,
-								onChange: function( value ) {
-									setAttributes( { copyButtonTextColor: value } );
-								},
-								label: __( 'Text', 'tgp-llms-txt' )
-							}
-						]
-					} ),
-					// View Button Colors
-					el( PanelColorSettings, {
-						title: __( 'View Button Colors', 'tgp-llms-txt' ),
-						initialOpen: false,
-						colorSettings: [
-							{
-								value: viewButtonBgColor,
-								onChange: function( value ) {
-									setAttributes( { viewButtonBgColor: value } );
-								},
-								label: __( 'Background', 'tgp-llms-txt' )
-							},
-							{
-								value: viewButtonTextColor,
-								onChange: function( value ) {
-									setAttributes( { viewButtonTextColor: value } );
-								},
-								label: __( 'Text', 'tgp-llms-txt' )
-							}
-						]
-					} )
+					)
 				),
 
-				// Block Preview
+				// Block Preview - uses wp-element-button for theme styling
 				el( 'div', blockProps,
 					el( 'button', {
 						type: 'button',
-						className: 'tgp-llm-btn tgp-copy-btn',
-						style: {
-							backgroundColor: copyButtonBgColor,
-							color: copyButtonTextColor
-						}
+						className: 'wp-element-button tgp-llm-btn tgp-copy-btn'
 					},
 						showIcons && el( 'span', { className: 'tgp-btn-icon' }, copyIcon ),
 						el( 'span', { className: 'tgp-btn-text' }, copyButtonLabel )
 					),
 					el( 'a', {
 						href: '#',
-						className: 'tgp-llm-btn tgp-view-btn',
-						style: {
-							backgroundColor: viewButtonBgColor,
-							color: viewButtonTextColor
-						},
+						className: 'wp-element-button tgp-llm-btn tgp-view-btn',
 						onClick: function( e ) { e.preventDefault(); }
 					},
 						showIcons && el( 'span', { className: 'tgp-btn-icon' }, viewIcon ),

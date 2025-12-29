@@ -1,10 +1,12 @@
 /**
- * LLM Buttons Block - Frontend Styles
+ * LLM Buttons Block - Styles
+ *
+ * Uses wp-element-button for base styling from theme.
+ * Only defines layout, icon behavior, and responsive adjustments.
  */
 
 .wp-block-tgp-llm-buttons {
 	display: flex;
-	gap: 0.75rem;
 	flex-wrap: wrap;
 }
 
@@ -26,27 +28,11 @@
 	justify-content: flex-end;
 }
 
+/* Button layout adjustments */
 .wp-block-tgp-llm-buttons .tgp-llm-btn {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.5rem;
-	padding: 0.625rem 1rem;
-	border: none;
-	border-radius: 6px;
-	font-size: 0.875rem;
-	font-weight: 500;
-	line-height: 1.4;
 	text-decoration: none;
-	cursor: pointer;
-	transition: opacity 0.2s ease, transform 0.1s ease;
-}
-
-.wp-block-tgp-llm-buttons .tgp-llm-btn:hover {
-	opacity: 0.9;
-}
-
-.wp-block-tgp-llm-buttons .tgp-llm-btn:active {
-	transform: scale(0.98);
 }
 
 .wp-block-tgp-llm-buttons .tgp-llm-btn:disabled {
@@ -54,22 +40,24 @@
 	cursor: not-allowed;
 }
 
+/* Icons */
 .wp-block-tgp-llm-buttons .tgp-btn-icon {
 	display: flex;
 	align-items: center;
 	flex-shrink: 0;
+	margin-right: 0.5em;
 }
 
 .wp-block-tgp-llm-buttons .tgp-btn-icon svg {
-	width: 16px;
-	height: 16px;
+	width: 1em;
+	height: 1em;
 }
 
 .wp-block-tgp-llm-buttons .tgp-btn-text {
 	white-space: nowrap;
 }
 
-/* Layout stack on mobile */
+/* Responsive: stack on mobile */
 @media (max-width: 480px) {
 	.wp-block-tgp-llm-buttons.is-layout-row {
 		flex-direction: column;

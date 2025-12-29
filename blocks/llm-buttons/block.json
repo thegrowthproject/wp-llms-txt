@@ -2,29 +2,13 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "tgp/llm-buttons",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"title": "LLM Buttons",
 	"category": "widgets",
 	"description": "Add Copy for LLM and View as Markdown buttons to your content.",
 	"keywords": [ "llm", "markdown", "copy", "ai", "chatgpt" ],
 	"textdomain": "tgp-llms-txt",
 	"attributes": {
-		"copyButtonBgColor": {
-			"type": "string",
-			"default": "#1e1e1e"
-		},
-		"copyButtonTextColor": {
-			"type": "string",
-			"default": "#ffffff"
-		},
-		"viewButtonBgColor": {
-			"type": "string",
-			"default": "#f0f0f0"
-		},
-		"viewButtonTextColor": {
-			"type": "string",
-			"default": "#1e1e1e"
-		},
 		"showIcons": {
 			"type": "boolean",
 			"default": true
@@ -48,11 +32,38 @@
 		"align": [ "left", "center", "right", "wide" ],
 		"spacing": {
 			"margin": true,
-			"padding": true
+			"padding": true,
+			"blockGap": true
+		},
+		"color": {
+			"background": true,
+			"text": true,
+			"link": true,
+			"gradients": true,
+			"__experimentalDefaultControls": {
+				"background": true,
+				"text": true
+			}
+		},
+		"typography": {
+			"fontSize": true,
+			"fontWeight": true,
+			"__experimentalFontFamily": true,
+			"__experimentalDefaultControls": {
+				"fontSize": true
+			}
+		},
+		"__experimentalBorder": {
+			"radius": true,
+			"width": true,
+			"color": true,
+			"style": true,
+			"__experimentalDefaultControls": {
+				"radius": true
+			}
 		}
 	},
 	"editorScript": "file:./index.js",
-	"editorStyle": "file:./editor.css",
 	"style": "file:./style.css",
 	"render": "file:./render.php",
 	"viewScript": "file:./view.js"
