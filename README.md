@@ -1,6 +1,8 @@
-# TGP LLMs.txt
+# WP LLMs.txt
 
 A WordPress plugin that makes your site readable by AI systems.
+
+Built by [The Growth Project](https://thegrowthproject.com.au).
 
 ## The Problem
 
@@ -127,6 +129,16 @@ Responses include a `Cache-Control: public, max-age=3600` header (1 hour). For p
 
 - WordPress 5.0+ (Gutenberg required)
 - PHP 7.4+
+
+## Built By
+
+[The Growth Project](https://thegrowthproject.com.au) — Technology delivery for founders and operators.
+
+We build systems that work. AI implementation, DevOps, integration, platform builds.
+
+- [AI Implementation Services](https://thegrowthproject.com.au/services/ai-implementation/)
+- [All Services](https://thegrowthproject.com.au/services/)
+- [Get in Touch](https://thegrowthproject.com.au/contact/)
 
 ## License
 
