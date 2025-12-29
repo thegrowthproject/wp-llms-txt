@@ -22,6 +22,29 @@ This plugin implements the llms.txt standard for WordPress:
 
 AI tools can now crawl your site efficiently. Your content is accessible in a format they understand.
 
+## GEO: Generative Engine Optimization
+
+SEO optimizes for Google. GEO optimizes for AI.
+
+AI assistants like ChatGPT, Claude, and Perplexity are becoming primary research tools. When someone asks "what's the best approach to systems integration?", these tools pull from sources they can read and trust.
+
+**The shift is measurable:**
+- AI-referred traffic increased 527% in early 2025 (Ahrefs)
+- 60% of Google searches now end without a click — users get answers from AI summaries
+- ChatGPT and Perplexity are routing millions of queries daily
+
+**How this plugin helps with GEO:**
+
+| GEO Factor | How Plugin Addresses It |
+|------------|------------------------|
+| **Structured content** | Clean markdown with clear headings, not messy HTML |
+| **Machine-readable index** | `/llms.txt` tells AI what content exists |
+| **Frontmatter metadata** | YAML provides title, date, author, URL context |
+| **Single-file export** | `/llms-full.txt` for complete site ingestion |
+| **Standard compliance** | Follows llmstxt.org specification |
+
+If your content isn't accessible to AI systems, you're invisible to a growing segment of search. This plugin fixes that.
+
 ## Installation
 
 1. Upload the `tgp-llms-txt` folder to `/wp-content/plugins/`
