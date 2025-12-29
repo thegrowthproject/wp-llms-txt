@@ -206,7 +206,7 @@ new_field: "value"
 ## Dependencies
 
 - WordPress 5.0+ (Gutenberg)
-- PHP 7.4+
+- PHP 8.2+
 - No external PHP dependencies
 - No npm build process (vanilla JS in blocks)
 

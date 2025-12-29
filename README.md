@@ -128,7 +128,7 @@ Responses include a `Cache-Control: public, max-age=3600` header (1 hour). For p
 ## Requirements
 
 - WordPress 5.0+ (Gutenberg required)
-- PHP 7.4+
+- PHP 8.2+
 
 ## Built By
 
