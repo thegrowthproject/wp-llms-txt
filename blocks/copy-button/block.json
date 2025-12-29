@@ -29,7 +29,6 @@
 		"alignWide": false,
 		"reusable": false,
 		"color": {
-			"__experimentalSkipSerialization": true,
 			"gradients": true,
 			"__experimentalDefaultControls": {
 				"background": true,
@@ -37,16 +36,6 @@
 			}
 		},
 		"typography": {
-			"__experimentalSkipSerialization": [
-				"fontSize",
-				"lineHeight",
-				"fontFamily",
-				"fontWeight",
-				"fontStyle",
-				"textTransform",
-				"textDecoration",
-				"letterSpacing"
-			],
 			"fontSize": true,
 			"lineHeight": true,
 			"__experimentalFontFamily": true,
@@ -60,11 +49,8 @@
 				"fontSize": true
 			}
 		},
-		"shadow": {
-			"__experimentalSkipSerialization": true
-		},
+		"shadow": true,
 		"spacing": {
-			"__experimentalSkipSerialization": true,
 			"padding": [ "horizontal", "vertical" ],
 			"__experimentalDefaultControls": {
 				"padding": true
@@ -75,7 +61,6 @@
 			"radius": true,
 			"style": true,
 			"width": true,
-			"__experimentalSkipSerialization": true,
 			"__experimentalDefaultControls": {
 				"color": true,
 				"radius": true,

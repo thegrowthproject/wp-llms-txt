@@ -55,27 +55,60 @@ $allowed_svg = [
 	],
 ];
 
-// Build wrapper classes (outer div gets block styles like is-style-outline).
-$wrapper_classes = [ 'wp-block-button' ];
-if ( $width ) {
-	$wrapper_classes[] = 'has-custom-width';
-	$wrapper_classes[] = 'wp-block-button__width-' . $width;
+// Get block wrapper attributes (includes styles and classes from Block Supports).
+$wrapper_attrs_string = get_block_wrapper_attributes();
+
+// Parse the wrapper attributes string to extract classes and styles.
+$wrapper_classes = [];
+$wrapper_styles  = '';
+
+// Extract class attribute.
+if ( preg_match( '/class="([^"]*)"/', $wrapper_attrs_string, $class_matches ) ) {
+	$all_classes = explode( ' ', $class_matches[1] );
+
+	foreach ( $all_classes as $class ) {
+		$wrapper_classes[] = $class;
+	}
 }
 
-// Get block wrapper attributes for the outer div (includes is-style-* classes).
-$wrapper_attributes = get_block_wrapper_attributes(
-	[
-		'class' => implode( ' ', $wrapper_classes ),
-	]
-);
+// Extract style attribute.
+if ( preg_match( '/style="([^"]*)"/', $wrapper_attrs_string, $style_matches ) ) {
+	$wrapper_styles = $style_matches[1];
+}
 
-// Inner button classes.
-$button_classes = 'wp-block-button__link wp-element-button tgp-copy-btn';
+// Build outer wrapper classes (block identifier + style variant + width).
+$outer_classes = [ 'wp-block-button' ];
+
+// Add is-style-* class to outer wrapper (needed for fill/outline styles).
+foreach ( $wrapper_classes as $class ) {
+	if ( strpos( $class, 'is-style-' ) === 0 ) {
+		$outer_classes[] = $class;
+	}
+}
+
+// Add width classes.
+if ( $width ) {
+	$outer_classes[] = 'has-custom-width';
+	$outer_classes[] = 'wp-block-button__width-' . $width;
+}
+
+// Build inner button classes (button styling classes + block support classes).
+$inner_classes = [ 'wp-block-button__link', 'wp-element-button', 'tgp-copy-btn' ];
+
+// Add has-* classes to inner button (color, background, etc.).
+foreach ( $wrapper_classes as $class ) {
+	if ( strpos( $class, 'has-' ) === 0 ) {
+		$inner_classes[] = $class;
+	}
+}
+
+// Build style attribute for inner button.
+$style_attr = $wrapper_styles ? ' style="' . esc_attr( $wrapper_styles ) . '"' : '';
 ?>
-<div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+<div class="<?php echo esc_attr( implode( ' ', $outer_classes ) ); ?>">
 	<button
 		type="button"
-		class="<?php echo esc_attr( $button_classes ); ?>"
+		class="<?php echo esc_attr( implode( ' ', $inner_classes ) ); ?>"<?php echo $style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		data-post-id="<?php echo esc_attr( $post->ID ); ?>"
 		title="<?php esc_attr_e( 'Copy this content in markdown format for AI assistants', 'tgp-llms-txt' ); ?>"
 	>
