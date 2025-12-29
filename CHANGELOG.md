@@ -7,19 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2024-12-30
+## [1.0.0] - 2025-12-30
 
 ### Added
-- Initial release
-- `/llms.txt` endpoint with site index
-- `/llms-full.txt` endpoint with complete site content
+- `/llms.txt` endpoint with site index following llmstxt.org specification
 - `.md` endpoints for individual pages and posts
 - Gutenberg block for copy-to-clipboard functionality
-- YAML frontmatter for markdown files
-- Gutenberg to markdown conversion
-- Cache headers for performance
+- YAML frontmatter for markdown files (title, description, date, author, tags)
+- Gutenberg to markdown conversion (headings, lists, tables, links, emphasis, code)
+- Cache headers for performance (1 hour)
 
-### Technical
-- WordPress 5.0+ required (Gutenberg)
-- PHP 8.2+ required
-- Follows llmstxt.org specification
+### Developer Experience
+- WordPress Coding Standards (PHPCS) with CI
+- GitHub Actions for linting and releases
+- Automated plugin zip builds on release
+- Issue and PR templates
+- Contributing guidelines
+
+### Requirements
+- WordPress 5.0+ (Gutenberg)
+- PHP 8.2+

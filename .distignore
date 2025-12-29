@@ -1,0 +1,31 @@
+# Development files
+.git
+.github
+.editorconfig
+.gitignore
+.distignore
+
+# Composer dev dependencies
+composer.json
+composer.lock
+vendor/
+phpcs.xml.dist
+
+# Documentation (dev only)
+docs/
+CLAUDE.md
+CONTRIBUTING.md
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+node_modules/
+*.log
+*.zip
