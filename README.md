@@ -1,4 +1,4 @@
-# TGP LLMs.txt
+# WP LLMs Plugin
 
 A WordPress plugin that makes your site readable by AI systems.
 
