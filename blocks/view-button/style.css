@@ -1,0 +1,25 @@
+/**
+ * View Button Block - Styles
+ */
+
+.tgp-view-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5em;
+	text-decoration: none;
+}
+
+.tgp-view-btn .tgp-btn-icon {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.tgp-view-btn .tgp-btn-icon svg {
+	width: 1em;
+	height: 1em;
+}
+
+.tgp-view-btn .tgp-btn-text {
+	white-space: nowrap;
+}

@@ -2,7 +2,6 @@
 	'use strict';
 
 	document.addEventListener( 'DOMContentLoaded', function() {
-		// Find all copy buttons
 		const copyButtons = document.querySelectorAll( '.tgp-copy-btn' );
 
 		copyButtons.forEach( function( button ) {
@@ -13,13 +12,13 @@
 				const btnText = this.querySelector( '.tgp-btn-text' );
 				const originalText = btnText ? btnText.textContent : 'Copy for LLM';
 
-				// Show loading state
+				// Show loading state.
 				if ( btnText ) {
 					btnText.textContent = 'Copying...';
 				}
 				button.disabled = true;
 
-				// Fetch markdown via AJAX
+				// Fetch markdown via AJAX.
 				const formData = new FormData();
 				formData.append( 'action', 'tgp_get_markdown' );
 				formData.append( 'post_id', postId );
@@ -35,7 +34,6 @@
 				} )
 				.then( function( data ) {
 					if ( data.success && data.data.markdown ) {
-						// Copy to clipboard
 						return navigator.clipboard.writeText( data.data.markdown ).then( function() {
 							if ( btnText ) {
 								btnText.textContent = 'Copied!';
