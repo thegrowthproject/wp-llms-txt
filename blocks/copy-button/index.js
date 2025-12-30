@@ -13,7 +13,7 @@
 	} = wp.components;
 	const { __ } = wp.i18n;
 	const { createElement: el, Fragment } = wp.element;
-	const { SVG, Path, Rect } = wp.primitives;
+	const { SVG, Path } = wp.primitives;
 
 	// Copy icon SVG
 	const copyIcon = el( 'svg', {

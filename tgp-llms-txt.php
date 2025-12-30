@@ -92,7 +92,7 @@ class TGP_LLMs_Txt {
 
 		// Register block pattern.
 		register_block_pattern(
-			'tgp/llm-buttons',
+			'tgp/copy-view-buttons',
 			[
 				'title'       => __( 'LLM Buttons', 'tgp-llms-txt' ),
 				'description' => __( 'Copy for LLM and View as Markdown buttons.', 'tgp-llms-txt' ),
