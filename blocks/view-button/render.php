@@ -20,6 +20,34 @@ $label     = $attributes['label'] ?? __( 'View as Markdown', 'tgp-llms-txt' );
 $show_icon = $attributes['showIcon'] ?? true;
 $width     = $attributes['width'] ?? null;
 
+// Color attributes (used when no style variation is active).
+$bg_color_slug   = $attributes['backgroundColor'] ?? null;
+$text_color_slug = $attributes['textColor'] ?? null;
+$gradient_slug   = $attributes['gradient'] ?? null;
+
+// Custom color values from style attribute.
+$custom_bg_color   = $attributes['style']['color']['background'] ?? null;
+$custom_text_color = $attributes['style']['color']['text'] ?? null;
+$custom_gradient   = $attributes['style']['color']['gradient'] ?? null;
+
+// Typography from style attribute.
+$font_size       = $attributes['style']['typography']['fontSize'] ?? null;
+$line_height     = $attributes['style']['typography']['lineHeight'] ?? null;
+$font_weight     = $attributes['style']['typography']['fontWeight'] ?? null;
+$font_family     = $attributes['style']['typography']['fontFamily'] ?? null;
+$letter_spacing  = $attributes['style']['typography']['letterSpacing'] ?? null;
+$text_transform  = $attributes['style']['typography']['textTransform'] ?? null;
+$text_decoration = $attributes['style']['typography']['textDecoration'] ?? null;
+
+// Spacing from style attribute.
+$padding = $attributes['style']['spacing']['padding'] ?? null;
+
+// Border from style attribute.
+$border = $attributes['style']['border'] ?? null;
+
+// Shadow from style attribute.
+$shadow = $attributes['style']['shadow'] ?? null;
+
 // Build markdown URL.
 $permalink = get_permalink( $post );
 $md_url    = rtrim( $permalink, '/' ) . '.md';
@@ -59,36 +87,19 @@ $allowed_svg = [
 	],
 ];
 
-// Get block wrapper attributes (includes styles and classes from Block Supports).
+// Get block wrapper attributes (minimal now due to skipSerialization).
 $wrapper_attrs_string = get_block_wrapper_attributes();
 
-// Parse the wrapper attributes string to extract classes and styles.
-$wrapper_classes = [];
-$wrapper_styles  = '';
-
-// Extract class attribute.
-if ( preg_match( '/class="([^"]*)"/', $wrapper_attrs_string, $class_matches ) ) {
-	$all_classes = explode( ' ', $class_matches[1] );
-
-	foreach ( $all_classes as $class ) {
-		$wrapper_classes[] = $class;
-	}
+// Detect style variation from wrapper attributes.
+$style_variation     = 'fill'; // Default.
+$has_style_variation = false;
+if ( preg_match( '/is-style-([a-z0-9-]+)/', $wrapper_attrs_string, $style_match ) ) {
+	$style_variation     = $style_match[1];
+	$has_style_variation = ( 'fill' !== $style_variation );
 }
 
-// Extract style attribute.
-if ( preg_match( '/style="([^"]*)"/', $wrapper_attrs_string, $style_matches ) ) {
-	$wrapper_styles = $style_matches[1];
-}
-
-// Build outer wrapper classes (block identifier + style variant + width).
-$outer_classes = [ 'wp-block-button' ];
-
-// Add is-style-* class to outer wrapper (needed for fill/outline styles).
-foreach ( $wrapper_classes as $class ) {
-	if ( strpos( $class, 'is-style-' ) === 0 ) {
-		$outer_classes[] = $class;
-	}
-}
+// Build outer wrapper classes.
+$outer_classes = [ 'wp-block-button', 'is-style-' . $style_variation ];
 
 // Add width classes.
 if ( $width ) {
@@ -96,18 +107,112 @@ if ( $width ) {
 	$outer_classes[] = 'wp-block-button__width-' . $width;
 }
 
-// Build inner button classes (button styling classes + block support classes).
+// Build inner button classes.
 $inner_classes = [ 'wp-block-button__link', 'wp-element-button', 'tgp-view-btn' ];
 
-// Add has-* classes to inner button (color, background, etc.).
-foreach ( $wrapper_classes as $class ) {
-	if ( strpos( $class, 'has-' ) === 0 ) {
-		$inner_classes[] = $class;
+// Only add color classes if NOT using a style variation (or using default fill).
+if ( ! $has_style_variation ) {
+	if ( $bg_color_slug ) {
+		$inner_classes[] = 'has-background';
+		$inner_classes[] = 'has-' . $bg_color_slug . '-background-color';
+	}
+	if ( $text_color_slug ) {
+		$inner_classes[] = 'has-text-color';
+		$inner_classes[] = 'has-' . $text_color_slug . '-color';
+	}
+	if ( $gradient_slug ) {
+		$inner_classes[] = 'has-background';
+		$inner_classes[] = 'has-' . $gradient_slug . '-gradient-background';
+	}
+	// Add has-background/has-text-color for custom values.
+	if ( $custom_bg_color || $custom_gradient ) {
+		$inner_classes[] = 'has-background';
+	}
+	if ( $custom_text_color ) {
+		$inner_classes[] = 'has-text-color';
 	}
 }
 
-// Build style attribute for inner button.
-$style_attr = $wrapper_styles ? ' style="' . esc_attr( $wrapper_styles ) . '"' : '';
+// Build inline styles.
+$inline_styles = [];
+
+// Color styles only if NOT using a style variation.
+if ( ! $has_style_variation ) {
+	if ( $custom_bg_color ) {
+		$inline_styles[] = 'background-color: ' . $custom_bg_color;
+	}
+	if ( $custom_text_color ) {
+		$inline_styles[] = 'color: ' . $custom_text_color;
+	}
+	if ( $custom_gradient ) {
+		$inline_styles[] = 'background: ' . $custom_gradient;
+	}
+}
+
+// Typography styles (always apply).
+if ( $font_size ) {
+	$inline_styles[] = 'font-size: ' . $font_size;
+}
+if ( $line_height ) {
+	$inline_styles[] = 'line-height: ' . $line_height;
+}
+if ( $font_weight ) {
+	$inline_styles[] = 'font-weight: ' . $font_weight;
+}
+if ( $font_family ) {
+	$inline_styles[] = 'font-family: ' . $font_family;
+}
+if ( $letter_spacing ) {
+	$inline_styles[] = 'letter-spacing: ' . $letter_spacing;
+}
+if ( $text_transform ) {
+	$inline_styles[] = 'text-transform: ' . $text_transform;
+}
+if ( $text_decoration ) {
+	$inline_styles[] = 'text-decoration: ' . $text_decoration;
+}
+
+// Spacing styles (always apply).
+if ( $padding ) {
+	if ( is_array( $padding ) ) {
+		if ( isset( $padding['top'] ) ) {
+			$inline_styles[] = 'padding-top: ' . $padding['top'];
+		}
+		if ( isset( $padding['right'] ) ) {
+			$inline_styles[] = 'padding-right: ' . $padding['right'];
+		}
+		if ( isset( $padding['bottom'] ) ) {
+			$inline_styles[] = 'padding-bottom: ' . $padding['bottom'];
+		}
+		if ( isset( $padding['left'] ) ) {
+			$inline_styles[] = 'padding-left: ' . $padding['left'];
+		}
+	}
+}
+
+// Border styles (always apply).
+if ( $border ) {
+	if ( isset( $border['radius'] ) ) {
+		$inline_styles[] = 'border-radius: ' . $border['radius'];
+	}
+	if ( isset( $border['width'] ) ) {
+		$inline_styles[] = 'border-width: ' . $border['width'];
+	}
+	if ( isset( $border['style'] ) ) {
+		$inline_styles[] = 'border-style: ' . $border['style'];
+	}
+	if ( isset( $border['color'] ) ) {
+		$inline_styles[] = 'border-color: ' . $border['color'];
+	}
+}
+
+// Shadow styles (always apply).
+if ( $shadow ) {
+	$inline_styles[] = 'box-shadow: ' . $shadow;
+}
+
+// Build style attribute.
+$style_attr = ! empty( $inline_styles ) ? ' style="' . esc_attr( implode( '; ', $inline_styles ) ) . '"' : '';
 ?>
 <div class="<?php echo esc_attr( implode( ' ', $outer_classes ) ); ?>">
 	<a
