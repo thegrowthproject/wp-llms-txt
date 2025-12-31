@@ -9,6 +9,10 @@
  * @var WP_Block $block      Block instance.
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 // Get current post.
 global $post;
 if ( ! $post ) {
@@ -16,6 +20,7 @@ if ( ! $post ) {
 }
 
 // Get attributes with defaults.
+/* translators: Default button label for viewing content as markdown */
 $label     = $attributes['label'] ?? __( 'View as Markdown', 'tgp-llms-txt' );
 $show_icon = $attributes['showIcon'] ?? true;
 $width     = $attributes['width'] ?? null;
@@ -220,11 +225,12 @@ $style_attr = ! empty( $inline_styles ) ? ' style="' . esc_attr( implode( '; ', 
 		target="_blank"
 		rel="noopener noreferrer"
 		class="<?php echo esc_attr( implode( ' ', $inner_classes ) ); ?>"<?php echo $style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		title="<?php esc_attr_e( 'View this content as plain markdown', 'tgp-llms-txt' ); ?>"
+		title="<?php /* translators: Tooltip text for view markdown button */ esc_attr_e( 'View this content as plain markdown', 'tgp-llms-txt' ); ?>"
 	>
 		<?php if ( $show_icon ) : ?>
-			<span class="tgp-btn-icon"><?php echo wp_kses( $view_icon, $allowed_svg ); ?></span>
+			<span class="tgp-btn-icon" aria-hidden="true"><?php echo wp_kses( $view_icon, $allowed_svg ); ?></span>
 		<?php endif; ?>
 		<span class="tgp-btn-text"><?php echo esc_html( $label ); ?></span>
+		<span class="screen-reader-text"><?php /* translators: Screen reader text describing the view markdown button action */ esc_html_e( 'View page content as plain markdown in new tab', 'tgp-llms-txt' ); ?></span>
 	</a>
 </div>

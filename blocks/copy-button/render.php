@@ -12,12 +12,17 @@
  * @var WP_Block $block      Block instance.
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 global $post;
 if ( ! $post ) {
 	return '';
 }
 
 // Get attributes with defaults.
+/* translators: Default button label for copy to clipboard action */
 $label     = $attributes['label'] ?? __( 'Copy for LLM', 'tgp-llms-txt' );
 $show_icon = $attributes['showIcon'] ?? true;
 $width     = $attributes['width'] ?? null;
@@ -59,8 +64,11 @@ $context = [
 	'mdUrl'        => $md_url,
 	'copyState'    => 'idle',
 	'label'        => $label,
+	/* translators: Button text shown while copy operation is in progress */
 	'labelCopying' => __( 'Copying...', 'tgp-llms-txt' ),
+	/* translators: Button text shown after successful copy to clipboard */
 	'labelSuccess' => __( 'Copied!', 'tgp-llms-txt' ),
+	/* translators: Button text shown when copy operation fails */
 	'labelError'   => __( 'Failed', 'tgp-llms-txt' ),
 ];
 
@@ -233,14 +241,15 @@ $style_attr = ! empty( $inline_styles ) ? ' style="' . esc_attr( implode( '; ', 
 	<button
 		type="button"
 		class="<?php echo esc_attr( implode( ' ', $inner_classes ) ); ?>"<?php echo $style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		title="<?php esc_attr_e( 'Copy this content in markdown format for AI assistants', 'tgp-llms-txt' ); ?>"
+		title="<?php /* translators: Tooltip text for copy button */ esc_attr_e( 'Copy this content in markdown format for AI assistants', 'tgp-llms-txt' ); ?>"
 		data-wp-on--click="actions.copyMarkdown"
 		data-wp-bind--disabled="state.isDisabled"
 		data-wp-class--is-loading="state.isLoading"
 	>
 		<?php if ( $show_icon ) : ?>
-			<span class="tgp-btn-icon"><?php echo wp_kses( $copy_icon, $allowed_svg ); ?></span>
+			<span class="tgp-btn-icon" aria-hidden="true"><?php echo wp_kses( $copy_icon, $allowed_svg ); ?></span>
 		<?php endif; ?>
 		<span class="tgp-btn-text" data-wp-text="state.buttonText"><?php echo esc_html( $label ); ?></span>
+		<span class="screen-reader-text"><?php /* translators: Screen reader text describing the copy button action */ esc_html_e( 'Copy page content as markdown for AI assistants', 'tgp-llms-txt' ); ?></span>
 	</button>
 </div>
