@@ -249,7 +249,7 @@ $style_attr = ! empty( $inline_styles ) ? ' style="' . esc_attr( implode( '; ', 
 		<?php if ( $show_icon ) : ?>
 			<span class="tgp-btn-icon" aria-hidden="true"><?php echo wp_kses( $copy_icon, $allowed_svg ); ?></span>
 		<?php endif; ?>
-		<span class="tgp-btn-text" data-wp-text="state.buttonText"><?php echo esc_html( $label ); ?></span>
+		<span class="tgp-btn-text" role="status" aria-live="polite" data-wp-text="state.buttonText"><?php echo esc_html( $label ); ?></span>
 		<span class="screen-reader-text"><?php /* translators: Screen reader text describing the copy button action */ esc_html_e( 'Copy page content as markdown for AI assistants', 'tgp-llms-txt' ); ?></span>
 	</button>
 </div>

@@ -192,11 +192,13 @@
 				// Inspector Controls (Sidebar)
 				el( InspectorControls, {},
 					el( PanelBody, {
+						// translators: Title for the block settings panel in sidebar.
 						title: __( 'Settings', 'tgp-llms-txt' ),
 						initialOpen: true
 					},
 						el( ToggleGroupControl, {
 							__nextHasNoMarginBottom: true,
+							// translators: Label for button width control (25%, 50%, 75%, 100%).
 							label: __( 'Width', 'tgp-llms-txt' ),
 							value: width ? String( width ) : undefined,
 							onChange: function( value ) {
@@ -211,6 +213,7 @@
 						),
 						el( ToggleControl, {
 							__nextHasNoMarginBottom: true,
+							// translators: Label for toggle to show/hide copy icon in button.
 							label: __( 'Show Icon', 'tgp-llms-txt' ),
 							checked: showIcon,
 							onChange: function( value ) {
@@ -231,6 +234,7 @@
 							onChange: function( value ) {
 								setAttributes( { label: value } );
 							},
+							// translators: Default placeholder text for copy button label.
 							placeholder: __( 'Copy for LLM', 'tgp-llms-txt' ),
 							allowedFormats: []
 						} )
