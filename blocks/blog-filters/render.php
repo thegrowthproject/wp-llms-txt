@@ -144,12 +144,14 @@ $wrapper_attrs = get_block_wrapper_attributes(
 		data-wp-bind--hidden="state.hasResults"
 	>
 		<p><?php esc_html_e( 'No posts found matching your criteria.', 'tgp-llms-txt' ); ?></p>
-		<button
-			type="button"
-			class="wp-block-tgp-blog-filters__clear-btn"
-			data-wp-on--click="actions.clearFilters"
-		>
-			<?php esc_html_e( 'Clear filters', 'tgp-llms-txt' ); ?>
-		</button>
+		<div class="wp-block-button is-style-outline">
+			<button
+				type="button"
+				class="wp-block-button__link wp-element-button"
+				data-wp-on--click="actions.clearFilters"
+			>
+				<?php esc_html_e( 'Clear filters', 'tgp-llms-txt' ); ?>
+			</button>
+		</div>
 	</div>
 </div>
