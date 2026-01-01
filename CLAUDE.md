@@ -394,6 +394,12 @@ $content = $this->cleanup( $content );                // Final step
 
 Order matters — block elements before inline elements.
 
+## Git Commits
+
+- **No AI attribution** — Do not add "Generated with Claude Code" or Co-Authored-By lines to commits
+- Follow conventional commit format: `type: description`
+- Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
+
 ## What Not to Change
 
 - **Hook priorities** — `init` at priority 0 for early request interception

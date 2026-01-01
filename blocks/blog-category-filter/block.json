@@ -1,0 +1,102 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "tgp/blog-category-filter",
+	"title": "Blog Category Filter",
+	"category": "widgets",
+	"parent": [ "tgp/blog-filters" ],
+	"description": "Category filter pills for filtering blog posts. Uses AND logic - posts must have ALL selected categories.",
+	"keywords": [ "category", "filter", "tag", "blog" ],
+	"textdomain": "tgp-llms-txt",
+	"usesContext": [ "tgp/blogFilters" ],
+	"attributes": {
+		"showCount": {
+			"type": "boolean",
+			"default": true
+		},
+		"layout": {
+			"type": "string",
+			"default": "wrap",
+			"enum": [ "wrap", "scroll" ]
+		},
+		"backgroundColor": {
+			"type": "string"
+		},
+		"textColor": {
+			"type": "string"
+		},
+		"gradient": {
+			"type": "string"
+		}
+	},
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"reusable": false,
+		"color": {
+			"__experimentalSkipSerialization": true,
+			"gradients": true,
+			"__experimentalDefaultControls": {
+				"background": true,
+				"text": true
+			}
+		},
+		"typography": {
+			"__experimentalSkipSerialization": [
+				"fontSize",
+				"lineHeight",
+				"fontFamily",
+				"fontWeight",
+				"fontStyle",
+				"textTransform",
+				"textDecoration",
+				"letterSpacing"
+			],
+			"fontSize": true,
+			"lineHeight": true,
+			"__experimentalFontFamily": true,
+			"__experimentalFontWeight": true,
+			"__experimentalFontStyle": true,
+			"__experimentalTextTransform": true,
+			"__experimentalTextDecoration": true,
+			"__experimentalLetterSpacing": true,
+			"__experimentalDefaultControls": {
+				"fontSize": true
+			}
+		},
+		"shadow": {
+			"__experimentalSkipSerialization": true
+		},
+		"spacing": {
+			"__experimentalSkipSerialization": true,
+			"margin": true,
+			"padding": [ "horizontal", "vertical" ],
+			"__experimentalDefaultControls": {
+				"padding": true
+			}
+		},
+		"__experimentalBorder": {
+			"__experimentalSkipSerialization": true,
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true,
+			"__experimentalDefaultControls": {
+				"color": true,
+				"radius": true,
+				"style": true,
+				"width": true
+			}
+		}
+	},
+	"styles": [
+		{ "name": "button-brand", "label": "Brand", "isDefault": true },
+		{ "name": "button-brand-alt", "label": "Brand Alt" },
+		{ "name": "button-dark", "label": "Dark" },
+		{ "name": "button-light", "label": "Light" },
+		{ "name": "outline", "label": "Outline" }
+	],
+	"editorScript": "file:./index.js",
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}

@@ -1,0 +1,38 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "tgp/blog-filters",
+	"title": "Blog Filters",
+	"category": "widgets",
+	"description": "A wrapper block for blog search and category filtering with real-time results.",
+	"keywords": [ "blog", "search", "filter", "category", "posts" ],
+	"textdomain": "tgp-llms-txt",
+	"attributes": {
+		"showResultCount": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"providesContext": {
+		"tgp/blogFilters": "showResultCount"
+	},
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"interactivity": true
+	},
+	"allowedBlocks": [
+		"tgp/blog-search",
+		"tgp/blog-category-filter"
+	],
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./editor.css",
+	"style": "file:./style.css",
+	"render": "file:./render.php",
+	"viewScriptModule": "file:./view.js"
+}

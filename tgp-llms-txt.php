@@ -3,7 +3,7 @@
  * Plugin Name: TGP LLMs.txt
  * Plugin URI: https://thegrowthproject.com.au
  * Description: Provides markdown endpoints for AI/LLM consumption. Adds .md URLs, /llms.txt index, and "Copy for LLM" buttons.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Requires at least: 6.5
  * Author: The Growth Project
  * Author URI: https://thegrowthproject.com.au
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TGP_LLMS_VERSION', '1.1.0' );
+define( 'TGP_LLMS_VERSION', '1.2.0' );
 define( 'TGP_LLMS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TGP_LLMS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -57,6 +57,11 @@ class TGP_LLMs_Txt {
 	 * Load required files.
 	 */
 	private function load_dependencies() {
+		// Shared helpers (used by blocks).
+		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-svg-sanitizer.php';
+		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-button-block-renderer.php';
+
+		// Core functionality.
 		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-markdown-converter.php';
 		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-frontmatter.php';
 		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-endpoint-handler.php';
@@ -82,6 +87,9 @@ class TGP_LLMs_Txt {
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_button_variation_styles' ] );
 		add_action( 'enqueue_block_editor_assets', [ $this, 'enqueue_button_variation_styles' ] );
 
+		// Add data-post-id attributes to Query Loop posts for blog filtering.
+		add_filter( 'render_block', [ $this, 'add_post_id_data_attribute' ], 10, 2 );
+
 		// Activation hook.
 		register_activation_hook( __FILE__, [ $this, 'activate' ] );
 		register_deactivation_hook( __FILE__, [ $this, 'deactivate' ] );
@@ -94,6 +102,11 @@ class TGP_LLMs_Txt {
 		// Register individual button blocks.
 		register_block_type( TGP_LLMS_PLUGIN_DIR . 'blocks/copy-button' );
 		register_block_type( TGP_LLMS_PLUGIN_DIR . 'blocks/view-button' );
+
+		// Register blog filter blocks.
+		register_block_type( TGP_LLMS_PLUGIN_DIR . 'blocks/blog-filters' );
+		register_block_type( TGP_LLMS_PLUGIN_DIR . 'blocks/blog-search' );
+		register_block_type( TGP_LLMS_PLUGIN_DIR . 'blocks/blog-category-filter' );
 
 		// Register block pattern.
 		register_block_pattern(
@@ -224,6 +237,35 @@ class TGP_LLMs_Txt {
 		wp_register_style( 'tgp-llms-button-variations', false, [], TGP_LLMS_VERSION );
 		wp_enqueue_style( 'tgp-llms-button-variations' );
 		wp_add_inline_style( 'tgp-llms-button-variations', $css );
+	}
+
+	/**
+	 * Add data-post-id attribute to Query Loop post template elements.
+	 *
+	 * This enables the blog-filters block to find and filter posts rendered
+	 * by the core Query Loop block.
+	 *
+	 * @param string $block_content The block content.
+	 * @param array  $block         The block data.
+	 * @return string Modified block content.
+	 */
+	public function add_post_id_data_attribute( $block_content, $block ) {
+		// Only process core/post-template blocks.
+		if ( 'core/post-template' !== $block['blockName'] ) {
+			return $block_content;
+		}
+
+		// Add data-post-id to each <li> element with post-{id} class.
+		$block_content = preg_replace_callback(
+			'/<li\s+class="([^"]*\bpost-(\d+)\b[^"]*)"/',
+			function ( $matches ) {
+				$post_id = $matches[2];
+				return '<li data-post-id="' . esc_attr( $post_id ) . '" class="' . $matches[1] . '"';
+			},
+			$block_content
+		);
+
+		return $block_content;
 	}
 
 	/**

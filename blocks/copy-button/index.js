@@ -148,33 +148,57 @@
 			// Spacing styles (always apply)
 			if ( style && style.spacing && style.spacing.padding ) {
 				const padding = style.spacing.padding;
-				if ( padding.top ) {
-					innerStyles.paddingTop = padding.top;
-				}
-				if ( padding.right ) {
-					innerStyles.paddingRight = padding.right;
-				}
-				if ( padding.bottom ) {
-					innerStyles.paddingBottom = padding.bottom;
-				}
-				if ( padding.left ) {
-					innerStyles.paddingLeft = padding.left;
+				if ( typeof padding === 'string' ) {
+					innerStyles.padding = padding;
+				} else {
+					if ( padding.top ) {
+						innerStyles.paddingTop = padding.top;
+					}
+					if ( padding.right ) {
+						innerStyles.paddingRight = padding.right;
+					}
+					if ( padding.bottom ) {
+						innerStyles.paddingBottom = padding.bottom;
+					}
+					if ( padding.left ) {
+						innerStyles.paddingLeft = padding.left;
+					}
 				}
 			}
 
 			// Border styles (always apply)
 			if ( style && style.border ) {
 				if ( style.border.radius ) {
-					innerStyles.borderRadius = style.border.radius;
+					if ( typeof style.border.radius === 'string' ) {
+						innerStyles.borderRadius = style.border.radius;
+					} else {
+						const r = style.border.radius;
+						innerStyles.borderRadius = ( r.topLeft || '0' ) + ' ' + ( r.topRight || '0' ) + ' ' + ( r.bottomRight || '0' ) + ' ' + ( r.bottomLeft || '0' );
+					}
 				}
 				if ( style.border.width ) {
-					innerStyles.borderWidth = style.border.width;
+					if ( typeof style.border.width === 'string' ) {
+						innerStyles.borderWidth = style.border.width;
+					} else {
+						const w = style.border.width;
+						innerStyles.borderWidth = ( w.top || '0' ) + ' ' + ( w.right || '0' ) + ' ' + ( w.bottom || '0' ) + ' ' + ( w.left || '0' );
+					}
 				}
 				if ( style.border.style ) {
-					innerStyles.borderStyle = style.border.style;
+					if ( typeof style.border.style === 'string' ) {
+						innerStyles.borderStyle = style.border.style;
+					} else {
+						const s = style.border.style;
+						innerStyles.borderStyle = ( s.top || 'none' ) + ' ' + ( s.right || 'none' ) + ' ' + ( s.bottom || 'none' ) + ' ' + ( s.left || 'none' );
+					}
 				}
 				if ( style.border.color ) {
-					innerStyles.borderColor = style.border.color;
+					if ( typeof style.border.color === 'string' ) {
+						innerStyles.borderColor = style.border.color;
+					} else {
+						const c = style.border.color;
+						innerStyles.borderColor = ( c.top || 'transparent' ) + ' ' + ( c.right || 'transparent' ) + ' ' + ( c.bottom || 'transparent' ) + ' ' + ( c.left || 'transparent' );
+					}
 				}
 			}
 

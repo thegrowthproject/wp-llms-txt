@@ -1,0 +1,91 @@
+/**
+ * Blog Filters wrapper block styles.
+ *
+ * @package TGP_LLMs_Txt
+ */
+
+.wp-block-tgp-blog-filters {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--wp--preset--spacing--small, 1rem);
+}
+
+/* Search block - fixed width */
+.wp-block-tgp-blog-filters .wp-block-tgp-blog-search {
+	flex: 0 0 auto;
+}
+
+/* Category filter - grows to fill remaining space */
+.wp-block-tgp-blog-filters .wp-block-tgp-blog-category-filter {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+/* Result count - full width on its own row */
+.wp-block-tgp-blog-filters__result-count {
+	flex: 0 0 100%;
+	font-size: var(--wp--preset--font-size--small, 0.875rem);
+	color: var(--wp--preset--color--contrast-2, #666);
+}
+
+/* Stack vertically on mobile */
+@media (max-width: 600px) {
+	.wp-block-tgp-blog-filters {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.wp-block-tgp-blog-filters .wp-block-tgp-blog-search,
+	.wp-block-tgp-blog-filters .wp-block-tgp-blog-category-filter {
+		flex: 0 0 auto;
+		width: 100%;
+	}
+}
+
+/* No results message */
+.wp-block-tgp-blog-filters__no-results {
+	padding: var(--wp--preset--spacing--medium, 2rem);
+	text-align: center;
+	background-color: var(--wp--preset--color--base-2, #f5f5f5);
+	border-radius: 8px;
+}
+
+.wp-block-tgp-blog-filters__no-results[hidden] {
+	display: none;
+}
+
+.wp-block-tgp-blog-filters__no-results p {
+	margin-bottom: var(--wp--preset--spacing--small, 1rem);
+	color: var(--wp--preset--color--contrast-2, #666);
+}
+
+.wp-block-tgp-blog-filters__clear-btn {
+	padding: 0.5rem 1rem;
+	font-size: var(--wp--preset--font-size--small, 0.875rem);
+	color: var(--wp--preset--color--contrast, #000);
+	cursor: pointer;
+	background: transparent;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	transition: background-color 0.2s, color 0.2s;
+}
+
+.wp-block-tgp-blog-filters__clear-btn:hover {
+	color: var(--wp--preset--color--base, #fff);
+	background-color: var(--wp--preset--color--contrast, #000);
+}
+
+/* Editor preview note */
+.wp-block-tgp-blog-filters__preview-note {
+	padding: var(--wp--preset--spacing--small, 1rem);
+	font-size: var(--wp--preset--font-size--small, 0.875rem);
+	color: var(--wp--preset--color--contrast-2, #666);
+	text-align: center;
+	background-color: var(--wp--preset--color--base-2, #f5f5f5);
+	border-radius: 4px;
+}
+
+.wp-block-tgp-blog-filters__preview-note p {
+	margin: 0;
+}
