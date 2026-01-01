@@ -2,34 +2,57 @@
 /**
  * LLMs.txt Generator
  *
- * Generates the /llms.txt index file listing all available content
+ * Generates the /llms.txt index file listing all available content.
+ * Follows the llmstxt.org specification for AI-readable site indexes.
+ *
+ * Filters available for customization:
+ * - tgp_llms_txt_description: Custom site description paragraph
+ * - tgp_llms_txt_contact_url: Contact page URL (default: /contact/)
+ * - tgp_llms_txt_pages: Array of page slugs and descriptions to include
+ *
+ * @package TGP_LLMs_Txt
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * LLMs.txt Generator class.
+ *
+ * Generates the site index for AI/LLM consumption.
+ */
 class TGP_LLMs_Txt_Generator {
 
 	/**
-	 * Constructor
+	 * Constructor.
+	 *
+	 * Registers hooks for regeneration triggers.
 	 */
 	public function __construct() {
-		// Regenerate on post save
+		// Regenerate on post save.
 		add_action( 'save_post', [ $this, 'maybe_regenerate' ], 10, 2 );
 	}
 
 	/**
-	 * Generate llms.txt content
+	 * Generate llms.txt content.
 	 *
-	 * @return string The llms.txt content
+	 * Builds the complete llms.txt file content including:
+	 * - Header with site info and standard reference
+	 * - Site tagline (from WordPress settings)
+	 * - Optional custom description (via filter)
+	 * - Key pages section
+	 * - Blog posts grouped by category
+	 * - Contact section
+	 *
+	 * @return string The llms.txt content.
 	 */
 	public function generate() {
-		$site_name = get_bloginfo( 'name' );
+		$site_name        = get_bloginfo( 'name' );
 		$site_description = get_bloginfo( 'description' );
-		$site_url = home_url();
+		$site_url         = home_url();
 
-		$output = "# {$site_name} - llms.txt\n";
+		$output  = "# {$site_name} - llms.txt\n";
 		$output .= "# {$site_url}/llms.txt\n";
 		$output .= "#\n";
 		$output .= "# This file helps AI systems understand and access our content.\n";
@@ -39,47 +62,80 @@ class TGP_LLMs_Txt_Generator {
 
 		$output .= "> {$site_description}\n\n";
 
-		// Site description (filterable).
+		/**
+		 * Filters the custom description paragraph in llms.txt.
+		 *
+		 * Use this to add a custom description paragraph after the site tagline.
+		 * Return an empty string to omit the custom description.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param string $description Custom description text. Default empty.
+		 */
 		$description = apply_filters( 'tgp_llms_txt_description', '' );
 		if ( ! empty( $description ) ) {
 			$output .= $description . "\n\n";
 		}
 
-		// Key pages
+		// Key pages.
 		$output .= "## Pages\n\n";
 		$output .= $this->get_pages_section();
 
-		// Blog posts by category
+		// Blog posts by category.
 		$output .= "## Blog Posts\n\n";
 		$output .= $this->get_posts_section();
 
-		// Contact info
+		// Contact section.
 		$output .= "## Contact\n\n";
 		$output .= "- Website: {$site_url}\n";
-		$output .= "- Contact: {$site_url}/contact/\n";
+
+		/**
+		 * Filters the contact page URL path in llms.txt.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param string $contact_path The contact page path. Default '/contact/'.
+		 */
+		$contact_path = apply_filters( 'tgp_llms_txt_contact_url', '/contact/' );
+		$output      .= "- Contact: {$site_url}{$contact_path}\n";
 
 		return $output;
 	}
 
 	/**
-	 * Get pages section
+	 * Get pages section for llms.txt.
+	 *
+	 * Generates markdown list of key pages with their descriptions.
+	 * Pages are defined as slug => description pairs and filtered
+	 * via 'tgp_llms_txt_pages'.
+	 *
+	 * @return string Markdown formatted pages section.
 	 */
 	private function get_pages_section() {
 		$output = '';
 
-		// Define key pages to include
-		$key_pages = [
-			'about'    => 'About us and how we work',
-			'services' => 'What we deliver',
-			'contact'  => 'Get in touch',
-		];
+		/**
+		 * Filters the pages to include in llms.txt.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param array $pages Array of page slug => description pairs.
+		 */
+		$key_pages = apply_filters(
+			'tgp_llms_txt_pages',
+			[
+				'about'    => 'About us and how we work',
+				'services' => 'What we deliver',
+				'contact'  => 'Get in touch',
+			]
+		);
 
 		foreach ( $key_pages as $slug => $description ) {
 			$page = get_page_by_path( $slug );
 			if ( $page ) {
-				$url = get_permalink( $page );
+				$url    = get_permalink( $page );
 				$md_url = $this->get_md_url( $url );
-				$title = get_the_title( $page );
+				$title  = get_the_title( $page );
 				$output .= "- [{$title}]({$md_url}): {$description}\n";
 			}
 		}
@@ -89,12 +145,17 @@ class TGP_LLMs_Txt_Generator {
 	}
 
 	/**
-	 * Get blog posts section
+	 * Get blog posts section for llms.txt.
+	 *
+	 * Generates markdown list of published posts grouped by category.
+	 * If no categories exist, posts are listed without grouping.
+	 *
+	 * @return string Markdown formatted posts section.
 	 */
 	private function get_posts_section() {
 		$output = '';
 
-		// Get all categories with posts
+		// Get all categories with posts.
 		$categories = get_categories(
 			[
 				'hide_empty' => true,
@@ -104,10 +165,10 @@ class TGP_LLMs_Txt_Generator {
 		);
 
 		if ( empty( $categories ) ) {
-			// No categories, just list all posts
+			// No categories, just list all posts.
 			$output .= $this->get_posts_list();
 		} else {
-			// Group by category
+			// Group by category.
 			foreach ( $categories as $category ) {
 				$output .= "### {$category->name}\n\n";
 
@@ -122,9 +183,9 @@ class TGP_LLMs_Txt_Generator {
 				);
 
 				foreach ( $posts as $post ) {
-					$url = get_permalink( $post );
-					$md_url = $this->get_md_url( $url );
-					$title = get_the_title( $post );
+					$url     = get_permalink( $post );
+					$md_url  = $this->get_md_url( $url );
+					$title   = get_the_title( $post );
 					$excerpt = $this->get_short_excerpt( $post );
 					$output .= "- [{$title}]({$md_url}): {$excerpt}\n";
 				}
@@ -137,7 +198,12 @@ class TGP_LLMs_Txt_Generator {
 	}
 
 	/**
-	 * Get all posts list (no categories)
+	 * Get all posts list without category grouping.
+	 *
+	 * Used as fallback when no categories exist. Lists all published
+	 * posts in descending date order with titles, markdown URLs, and excerpts.
+	 *
+	 * @return string Markdown formatted posts list.
 	 */
 	private function get_posts_list() {
 		$output = '';
@@ -163,7 +229,14 @@ class TGP_LLMs_Txt_Generator {
 	}
 
 	/**
-	 * Get short excerpt for llms.txt
+	 * Get short excerpt for a post.
+	 *
+	 * Returns a truncated excerpt suitable for llms.txt listings.
+	 * Uses the post's excerpt if available, otherwise generates one
+	 * from the post content (stripped of HTML and block comments).
+	 *
+	 * @param WP_Post $post The post object.
+	 * @return string Truncated excerpt (max 15 words).
 	 */
 	private function get_short_excerpt( $post ) {
 		$excerpt = get_the_excerpt( $post );
@@ -178,7 +251,13 @@ class TGP_LLMs_Txt_Generator {
 	}
 
 	/**
-	 * Convert URL to .md URL
+	 * Convert a permalink to its markdown endpoint URL.
+	 *
+	 * Transforms a standard WordPress permalink into the corresponding
+	 * .md endpoint URL for AI/LLM consumption.
+	 *
+	 * @param string $url The original permalink URL.
+	 * @return string The markdown endpoint URL (with .md suffix).
 	 */
 	private function get_md_url( $url ) {
 		// Remove trailing slash and add .md
@@ -187,7 +266,14 @@ class TGP_LLMs_Txt_Generator {
 	}
 
 	/**
-	 * Maybe regenerate on post save
+	 * Handle post save for potential llms.txt regeneration.
+	 *
+	 * Hooked to 'save_post' action. Currently a placeholder for future
+	 * caching implementation. Filters out autosaves, revisions, and
+	 * non-published posts/pages.
+	 *
+	 * @param int     $post_id The post ID.
+	 * @param WP_Post $post    The post object.
 	 */
 	public function maybe_regenerate( $post_id, $post ) {
 		// Skip autosaves and revisions
