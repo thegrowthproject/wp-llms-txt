@@ -91,6 +91,7 @@
 	},
 	"styles": [
 		{ "name": "button-brand", "label": "Brand", "isDefault": true },
+		{ "name": "button-brand-alt", "label": "Brand Alt" },
 		{ "name": "button-dark", "label": "Dark" },
 		{ "name": "button-light", "label": "Light" },
 		{ "name": "outline", "label": "Outline" }
