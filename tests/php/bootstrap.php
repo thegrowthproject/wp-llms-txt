@@ -18,6 +18,7 @@ Monkey\setUp();
 
 // Define WordPress constants if not defined.
 if ( ! defined( 'ABSPATH' ) ) {
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- ABSPATH is a WordPress core constant.
 	define( 'ABSPATH', '/tmp/wordpress/' );
 }
 
