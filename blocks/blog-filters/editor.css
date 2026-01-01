@@ -1,0 +1,36 @@
+/**
+ * Blog Filters block editor styles.
+ *
+ * Ensures search and category filter appear inline in the editor,
+ * matching the frontend layout.
+ *
+ * @package TGP_LLMs_Txt
+ */
+
+/* Editor wrapper - apply flex layout */
+.wp-block-tgp-blog-filters {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--wp--preset--spacing--small, 1rem);
+}
+
+/* Target InnerBlocks wrapper which creates intermediate div */
+.wp-block-tgp-blog-filters > .block-editor-inner-blocks > .block-editor-block-list__layout {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--wp--preset--spacing--small, 1rem);
+	width: 100%;
+}
+
+/* Search block - fixed width in editor */
+.wp-block-tgp-blog-filters .wp-block-tgp-blog-search {
+	flex: 0 0 auto;
+}
+
+/* Category filter - grows to fill remaining space */
+.wp-block-tgp-blog-filters .wp-block-tgp-blog-category-filter {
+	flex: 1 1 auto;
+	min-width: 0;
+}

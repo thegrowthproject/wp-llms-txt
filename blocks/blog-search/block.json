@@ -1,0 +1,39 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "tgp/blog-search",
+	"title": "Blog Search",
+	"category": "widgets",
+	"parent": [ "tgp/blog-filters" ],
+	"description": "Search input for filtering blog posts by title and excerpt.",
+	"keywords": [ "search", "filter", "blog" ],
+	"textdomain": "tgp-llms-txt",
+	"usesContext": [ "tgp/blogFilters" ],
+	"attributes": {
+		"placeholder": {
+			"type": "string",
+			"default": "Search posts..."
+		},
+		"showIcon": {
+			"type": "boolean",
+			"default": false
+		},
+		"showClearButton": {
+			"type": "boolean",
+			"default": true
+		},
+		"width": {
+			"type": "string"
+		}
+	},
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"spacing": {
+			"margin": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}
