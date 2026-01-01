@@ -98,14 +98,21 @@ foreach ( $posts_data as $post_item ) {
 	}
 }
 
-// Interactivity API context.
+// Global state for large, shared data (reduces HTML payload).
+wp_interactivity_state(
+	'tgp/blog-filters',
+	[
+		'posts'      => $posts_data,
+		'categories' => $categories_data,
+		'totalPosts' => count( $posts_data ),
+	]
+);
+
+// Context only for instance-specific, reactive values.
 $context = [
-	'posts'              => $posts_data,
-	'categories'         => $categories_data,
 	'searchQuery'        => $initial_search,
 	'selectedCategories' => $initial_categories,
 	'visiblePostIds'     => $initial_visible_ids,
-	'totalPosts'         => count( $posts_data ),
 	'showResultCount'    => $show_result_count,
 ];
 

@@ -11,6 +11,11 @@ import { store, getContext } from '@wordpress/interactivity';
 
 const { state, actions, callbacks } = store( 'tgp/blog-filters', {
 	state: {
+		// Global state values (from wp_interactivity_state in PHP).
+		posts: [],
+		categories: [],
+		totalPosts: 0,
+
 		/**
 		 * Whether there are any visible posts.
 		 */
@@ -25,7 +30,7 @@ const { state, actions, callbacks } = store( 'tgp/blog-filters', {
 		get resultCountText() {
 			const ctx = getContext();
 			const visible = ctx.visiblePostIds.length;
-			const total = ctx.totalPosts;
+			const total = state.totalPosts;
 
 			if ( visible === total ) {
 				return `Showing all ${ total } posts`;
@@ -127,7 +132,7 @@ const { state, actions, callbacks } = store( 'tgp/blog-filters', {
 
 			const visibleIds = [];
 
-			for ( const post of ctx.posts ) {
+			for ( const post of state.posts ) {
 				let matchesSearch = true;
 				let matchesCategories = true;
 
@@ -190,7 +195,7 @@ const { state, actions, callbacks } = store( 'tgp/blog-filters', {
 				actions.applyFilters();
 			} else {
 				// No filters - show all posts.
-				ctx.visiblePostIds = ctx.posts.map( ( p ) => p.id );
+				ctx.visiblePostIds = state.posts.map( ( p ) => p.id );
 			}
 		},
 
