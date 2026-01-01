@@ -11,10 +11,8 @@ import { store, getContext } from '@wordpress/interactivity';
 
 const { state, actions, callbacks } = store( 'tgp/blog-filters', {
 	state: {
-		// Global state values (from wp_interactivity_state in PHP).
-		posts: [],
-		categories: [],
-		totalPosts: 0,
+		// Note: posts, categories, and totalPosts come from wp_interactivity_state() in PHP.
+		// Do NOT define them here - JS definitions would overwrite PHP values.
 
 		/**
 		 * Whether there are any visible posts.
