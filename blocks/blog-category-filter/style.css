@@ -1,0 +1,143 @@
+/**
+ * Blog Category Filter block styles.
+ *
+ * Button colors come from theme via .wp-block-button.is-style-* classes:
+ * - Non-active pills use is-style-secondary-button (tint)
+ * - Active pills use the selected style variation
+ *
+ * This file handles layout, hover effects, and count badge styling.
+ *
+ * @package TGP_LLMs_Txt
+ */
+
+/* Reset border on block wrapper to prevent WordPress Block Supports from adding unwanted borders */
+.wp-block-tgp-blog-category-filter {
+	border: none;
+}
+
+.wp-block-tgp-blog-category-filter__list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+/* Scroll layout variant */
+.wp-block-tgp-blog-category-filter__list--scroll {
+	flex-wrap: nowrap;
+	padding-bottom: 8px;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
+}
+
+.wp-block-tgp-blog-category-filter__list--scroll::-webkit-scrollbar {
+	height: 6px;
+}
+
+.wp-block-tgp-blog-category-filter__list--scroll::-webkit-scrollbar-track {
+	background: var(--wp--preset--color--base-2, #f0f0f0);
+	border-radius: 3px;
+}
+
+.wp-block-tgp-blog-category-filter__list--scroll::-webkit-scrollbar-thumb {
+	background: var(--wp--preset--color--contrast-3, #ccc);
+	border-radius: 3px;
+}
+
+/* Category pill button - layout only */
+.wp-block-tgp-blog-category-filter__pill {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/*
+ * Hover effects for all pills.
+ * Colors come from theme via is-style-* classes.
+ */
+.wp-block-tgp-blog-category-filter__list .wp-block-button .wp-block-tgp-blog-category-filter__pill:hover {
+	filter: brightness(0.92);
+}
+
+/* Pill name */
+.wp-block-tgp-blog-category-filter__pill-name {
+	display: inline-block;
+}
+
+/* Post count badge - base styling */
+.wp-block-tgp-blog-category-filter__pill-count {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 6px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--wp--preset--color--contrast-2, #666);
+	background-color: rgba(0, 0, 0, 0.08);
+	border-radius: 10px;
+}
+
+/*
+ * Count badge - active state.
+ * Uses currentColor to inherit from parent button, with semi-transparent background.
+ */
+.wp-block-tgp-blog-category-filter .wp-block-button.wp-block-tgp-blog-category-filter__pill--active .wp-block-tgp-blog-category-filter__pill-count {
+	color: inherit;
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* For light/transparent backgrounds, use dark badge */
+.wp-block-tgp-blog-category-filter.is-style-button-light .wp-block-button.wp-block-tgp-blog-category-filter__pill--active .wp-block-tgp-blog-category-filter__pill-count,
+.wp-block-tgp-blog-category-filter.is-style-outline .wp-block-button.wp-block-tgp-blog-category-filter__pill--active .wp-block-tgp-blog-category-filter__pill-count {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+
+/*
+ * Active state button colors come from theme via .wp-block-button.is-style-* inheritance.
+ * Style class is now on pill wrapper to enable theme CSS cascade.
+ */
+
+/*
+ * Active-only style overrides.
+ * Custom properties are set on the block wrapper when styles are customized.
+ * Marker classes control which properties are applied to avoid overriding theme styles
+ * when only some properties are customized.
+ *
+ * Uses higher specificity to override theme button styles which load later.
+ * Theme: .wp-block-button.is-style-button-brand .wp-block-button__link (3 classes)
+ * Ours:  .wp-block-tgp-blog-category-filter.has-custom-* ... (5+ classes)
+ */
+
+/* Background color - only when customized */
+.wp-block-tgp-blog-category-filter.has-custom-active-bg .wp-block-button.wp-block-tgp-blog-category-filter__pill--active .wp-block-button__link.wp-block-tgp-blog-category-filter__pill {
+	background-color: var(--tgp-active-bg);
+}
+
+/* Text color - only when customized */
+.wp-block-tgp-blog-category-filter.has-custom-active-text .wp-block-button.wp-block-tgp-blog-category-filter__pill--active .wp-block-button__link.wp-block-tgp-blog-category-filter__pill {
+	color: var(--tgp-active-text);
+}
+
+/* Border - only when customized */
+.wp-block-tgp-blog-category-filter.has-custom-active-border .wp-block-button.wp-block-tgp-blog-category-filter__pill--active .wp-block-button__link.wp-block-tgp-blog-category-filter__pill {
+	border-width: var(--tgp-active-border-width);
+	border-style: var(--tgp-active-border-style);
+	border-color: var(--tgp-active-border-color);
+}
+
+/* Box shadow - only when customized */
+.wp-block-tgp-blog-category-filter.has-custom-active-shadow .wp-block-button.wp-block-tgp-blog-category-filter__pill--active .wp-block-button__link.wp-block-tgp-blog-category-filter__pill {
+	box-shadow: var(--tgp-active-box-shadow);
+}
+
+/* Editor note */
+.wp-block-tgp-blog-category-filter__note {
+	margin: 0;
+	font-style: italic;
+}
