@@ -1,6 +1,6 @@
 {
   "name": "tgp-llms-txt",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "WordPress plugin that implements llmstxt.org standard for AI/LLM content consumption",
   "private": true,
   "scripts": {
