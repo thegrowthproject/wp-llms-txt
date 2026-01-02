@@ -218,7 +218,7 @@ Report issues to [thegrowthproject.com.au/contact](https://thegrowthproject.com.
 
 - Check [existing issues](https://github.com/thegrowthproject/wp-llms-txt/issues)
 - Open a new issue for bugs or feature requests
-- Contact us at [thegrowthproject.com.au/contact](https://thegrowthproject.com.au/contact)
+- Contact us at [thegrowthproject.com.au/contact](https://thegrowthproject.com/contact)
 
 ## License
 
