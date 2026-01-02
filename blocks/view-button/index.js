@@ -51,59 +51,181 @@
 		icon: blockIcon,
 
 		edit: function( props ) {
-			const { attributes, setAttributes } = props;
-			const { label, showIcon, width } = attributes;
+			const { attributes, setAttributes, className } = props;
+			const {
+				label,
+				showIcon,
+				width,
+				backgroundColor,
+				textColor,
+				gradient,
+				style
+			} = attributes;
 
-			// Get block props (includes Block Supports styles and classes)
-			const blockProps = useBlockProps();
+			// Detect style variation from className
+			const styleMatch = className ? className.match( /is-style-([a-z0-9-]+)/ ) : null;
+			const styleVariation = styleMatch ? styleMatch[1] : 'fill';
+			const hasStyleVariation = styleVariation && styleVariation !== 'fill';
 
-			// Parse blockProps to split classes between wrapper and inner button
-			const allClasses = blockProps.className ? blockProps.className.split( ' ' ) : [];
-
-			// Classes for outer wrapper (is-style-*, width classes)
+			// Build outer wrapper classes
 			const wrapperClasses = [ 'wp-block-button' ];
-
-			// Classes for inner button
-			const innerClasses = [ 'wp-block-button__link', 'wp-element-button', 'tgp-view-btn' ];
-
-			// Distribute classes
-			allClasses.forEach( function( cls ) {
-				if ( cls.indexOf( 'is-style-' ) === 0 ) {
-					// Style classes go on outer wrapper
-					wrapperClasses.push( cls );
-				} else if ( cls.indexOf( 'has-' ) === 0 ) {
-					// Color/feature classes go on inner button
-					innerClasses.push( cls );
-				} else if ( cls.indexOf( 'wp-block-tgp-' ) === 0 ) {
-					// Block identifier - skip (we use wp-block-button structure)
-				}
-			} );
-
-			// Add width classes to wrapper
 			if ( width ) {
 				wrapperClasses.push( 'has-custom-width' );
 				wrapperClasses.push( 'wp-block-button__width-' + width );
 			}
 
-			// Build inner button props with styles
-			const innerProps = {
-				className: innerClasses.join( ' ' )
-			};
+			// Get block props with our custom wrapper class
+			const blockProps = useBlockProps( {
+				className: wrapperClasses.join( ' ' )
+			} );
 
-			// Apply inline styles from blockProps to inner button
-			if ( blockProps.style ) {
-				innerProps.style = blockProps.style;
+			// Build inner button classes
+			const innerClasses = [ 'wp-block-button__link', 'wp-element-button', 'wp-block-tgp-view-button' ];
+
+			// Only add color classes if NOT using a style variation
+			if ( ! hasStyleVariation ) {
+				if ( backgroundColor ) {
+					innerClasses.push( 'has-background' );
+					innerClasses.push( 'has-' + backgroundColor + '-background-color' );
+				}
+				if ( textColor ) {
+					innerClasses.push( 'has-text-color' );
+					innerClasses.push( 'has-' + textColor + '-color' );
+				}
+				if ( gradient ) {
+					innerClasses.push( 'has-background' );
+					innerClasses.push( 'has-' + gradient + '-gradient-background' );
+				}
+				// Check for custom color values
+				if ( style && style.color ) {
+					if ( style.color.background || style.color.gradient ) {
+						innerClasses.push( 'has-background' );
+					}
+					if ( style.color.text ) {
+						innerClasses.push( 'has-text-color' );
+					}
+				}
 			}
+
+			// Build inline styles
+			const innerStyles = {};
+
+			// Color styles only if NOT using a style variation
+			if ( ! hasStyleVariation && style && style.color ) {
+				if ( style.color.background ) {
+					innerStyles.backgroundColor = style.color.background;
+				}
+				if ( style.color.text ) {
+					innerStyles.color = style.color.text;
+				}
+				if ( style.color.gradient ) {
+					innerStyles.background = style.color.gradient;
+				}
+			}
+
+			// Typography styles (always apply)
+			if ( style && style.typography ) {
+				if ( style.typography.fontSize ) {
+					innerStyles.fontSize = style.typography.fontSize;
+				}
+				if ( style.typography.lineHeight ) {
+					innerStyles.lineHeight = style.typography.lineHeight;
+				}
+				if ( style.typography.fontWeight ) {
+					innerStyles.fontWeight = style.typography.fontWeight;
+				}
+				if ( style.typography.fontFamily ) {
+					innerStyles.fontFamily = style.typography.fontFamily;
+				}
+				if ( style.typography.letterSpacing ) {
+					innerStyles.letterSpacing = style.typography.letterSpacing;
+				}
+				if ( style.typography.textTransform ) {
+					innerStyles.textTransform = style.typography.textTransform;
+				}
+				if ( style.typography.textDecoration ) {
+					innerStyles.textDecoration = style.typography.textDecoration;
+				}
+			}
+
+			// Spacing styles (always apply)
+			if ( style && style.spacing && style.spacing.padding ) {
+				const padding = style.spacing.padding;
+				if ( typeof padding === 'string' ) {
+					innerStyles.padding = padding;
+				} else {
+					if ( padding.top ) {
+						innerStyles.paddingTop = padding.top;
+					}
+					if ( padding.right ) {
+						innerStyles.paddingRight = padding.right;
+					}
+					if ( padding.bottom ) {
+						innerStyles.paddingBottom = padding.bottom;
+					}
+					if ( padding.left ) {
+						innerStyles.paddingLeft = padding.left;
+					}
+				}
+			}
+
+			// Border styles (always apply)
+			if ( style && style.border ) {
+				if ( style.border.radius ) {
+					if ( typeof style.border.radius === 'string' ) {
+						innerStyles.borderRadius = style.border.radius;
+					} else {
+						const r = style.border.radius;
+						innerStyles.borderRadius = ( r.topLeft || '0' ) + ' ' + ( r.topRight || '0' ) + ' ' + ( r.bottomRight || '0' ) + ' ' + ( r.bottomLeft || '0' );
+					}
+				}
+				if ( style.border.width ) {
+					if ( typeof style.border.width === 'string' ) {
+						innerStyles.borderWidth = style.border.width;
+					} else {
+						const w = style.border.width;
+						innerStyles.borderWidth = ( w.top || '0' ) + ' ' + ( w.right || '0' ) + ' ' + ( w.bottom || '0' ) + ' ' + ( w.left || '0' );
+					}
+				}
+				if ( style.border.style ) {
+					if ( typeof style.border.style === 'string' ) {
+						innerStyles.borderStyle = style.border.style;
+					} else {
+						const s = style.border.style;
+						innerStyles.borderStyle = ( s.top || 'none' ) + ' ' + ( s.right || 'none' ) + ' ' + ( s.bottom || 'none' ) + ' ' + ( s.left || 'none' );
+					}
+				}
+				if ( style.border.color ) {
+					if ( typeof style.border.color === 'string' ) {
+						innerStyles.borderColor = style.border.color;
+					} else {
+						const c = style.border.color;
+						innerStyles.borderColor = ( c.top || 'transparent' ) + ' ' + ( c.right || 'transparent' ) + ' ' + ( c.bottom || 'transparent' ) + ' ' + ( c.left || 'transparent' );
+					}
+				}
+			}
+
+			// Shadow styles (always apply)
+			if ( style && style.shadow ) {
+				innerStyles.boxShadow = style.shadow;
+			}
+
+			const innerProps = {
+				className: innerClasses.join( ' ' ),
+				style: Object.keys( innerStyles ).length > 0 ? innerStyles : undefined
+			};
 
 			return el( Fragment, {},
 				// Inspector Controls (Sidebar)
 				el( InspectorControls, {},
 					el( PanelBody, {
+						// translators: Title for the block settings panel in sidebar.
 						title: __( 'Settings', 'tgp-llms-txt' ),
 						initialOpen: true
 					},
 						el( ToggleGroupControl, {
 							__nextHasNoMarginBottom: true,
+							// translators: Label for button width control (25%, 50%, 75%, 100%).
 							label: __( 'Width', 'tgp-llms-txt' ),
 							value: width ? String( width ) : undefined,
 							onChange: function( value ) {
@@ -118,6 +240,7 @@
 						),
 						el( ToggleControl, {
 							__nextHasNoMarginBottom: true,
+							// translators: Label for toggle to show/hide view icon in button.
 							label: __( 'Show Icon', 'tgp-llms-txt' ),
 							checked: showIcon,
 							onChange: function( value ) {
@@ -127,17 +250,18 @@
 					)
 				),
 
-				// Block Preview
-				el( 'div', { className: wrapperClasses.join( ' ' ) },
+				// Block Preview - spread blockProps for proper selection and preview
+				el( 'div', blockProps,
 					el( 'a', innerProps,
-						showIcon && el( 'span', { className: 'tgp-btn-icon' }, viewIcon ),
+						showIcon && el( 'span', { className: 'wp-block-tgp-view-button__icon' }, viewIcon ),
 						el( RichText, {
 							tagName: 'span',
-							className: 'tgp-btn-text',
+							className: 'wp-block-tgp-view-button__text',
 							value: label,
 							onChange: function( value ) {
 								setAttributes( { label: value } );
 							},
+							// translators: Default placeholder text for view markdown button label.
 							placeholder: __( 'View as Markdown', 'tgp-llms-txt' ),
 							allowedFormats: []
 						} )

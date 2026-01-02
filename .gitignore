@@ -18,3 +18,10 @@ composer.lock
 
 # Build artifacts
 *.zip
+.phpunit.cache/
+node_modules/
+coverage/
+
+# Playwright
+test-results/
+playwright-report/

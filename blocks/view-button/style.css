@@ -1,25 +1,27 @@
 /**
  * View Button Block - Styles
+ *
+ * BEM naming: .wp-block-tgp-view-button[__element][--modifier]
  */
 
-.tgp-view-btn {
+.wp-block-tgp-view-button {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5em;
 	text-decoration: none;
 }
 
-.tgp-view-btn .tgp-btn-icon {
+.wp-block-tgp-view-button__icon {
 	display: flex;
 	align-items: center;
 	flex-shrink: 0;
 }
 
-.tgp-view-btn .tgp-btn-icon svg {
+.wp-block-tgp-view-button__icon svg {
 	width: 1em;
 	height: 1em;
 }
 
-.tgp-view-btn .tgp-btn-text {
+.wp-block-tgp-view-button__text {
 	white-space: nowrap;
 }

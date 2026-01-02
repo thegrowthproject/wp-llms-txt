@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Get version from tag
         id: version
@@ -22,16 +24,35 @@ jobs:
 
       - name: Build plugin zip
         run: |
-          mkdir -p build/wp-llms-txt
-          rsync -av --exclude-from='.distignore' . build/wp-llms-txt/
+          mkdir -p build/tgp-llms-txt
+          rsync -av --exclude-from='.distignore' . build/tgp-llms-txt/
           cd build
-          zip -r wp-llms-txt-${{ steps.version.outputs.version }}.zip wp-llms-txt/
+          zip -r tgp-llms-txt-${{ steps.version.outputs.version }}.zip tgp-llms-txt/
           # Also create a generic zip name for easy download
-          cp wp-llms-txt-${{ steps.version.outputs.version }}.zip wp-llms-txt.zip
+          cp tgp-llms-txt-${{ steps.version.outputs.version }}.zip tgp-llms-txt.zip
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/wp-llms-txt-${{ steps.version.outputs.version }}.zip
-            build/wp-llms-txt.zip
+            build/tgp-llms-txt-${{ steps.version.outputs.version }}.zip
+            build/tgp-llms-txt.zip
+
+      - name: Update manifest for auto-updates
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+
+          # Update version in manifest
+          jq --arg v "$VERSION" --arg d "$DATE" \
+            '.version = $v | .last_updated = $d | .download_url = "https://github.com/thegrowthproject/wp-llms-txt/releases/download/v\($v)/tgp-llms-txt.zip"' \
+            update-manifest.json > update-manifest.tmp.json
+          mv update-manifest.tmp.json update-manifest.json
+
+      - name: Commit manifest update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add update-manifest.json
+          git diff --staged --quiet || git commit -m "Update manifest to v${{ steps.version.outputs.version }}"
+          git push origin main

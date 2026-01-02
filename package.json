@@ -1,0 +1,53 @@
+{
+  "name": "tgp-llms-txt",
+  "version": "1.2.0",
+  "description": "WordPress plugin that implements llmstxt.org standard for AI/LLM content consumption",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "wp-env": "wp-env"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@playwright/test": "^1.40.0",
+    "@testing-library/jest-dom": "^6.1.0",
+    "@wordpress/e2e-test-utils-playwright": "^1.0.0",
+    "@wordpress/env": "^10.0.0",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "roots": [
+      "<rootDir>/tests/js"
+    ],
+    "moduleNameMapper": {
+      "^@wordpress/interactivity$": "<rootDir>/tests/js/__mocks__/interactivity.js"
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/js/setup.js"
+    ],
+    "collectCoverageFrom": [
+      "blocks/**/view.js"
+    ],
+    "coverageDirectory": "coverage/js"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ]
+    ]
+  }
+}

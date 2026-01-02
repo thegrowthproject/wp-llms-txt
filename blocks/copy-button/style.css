@@ -1,45 +1,47 @@
 /**
  * Copy Button Block - Styles
+ *
+ * BEM naming: .wp-block-tgp-copy-button[__element][--modifier]
  */
 
-.tgp-copy-btn {
+.wp-block-tgp-copy-button {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5em;
 	cursor: pointer;
 }
 
-.tgp-copy-btn:disabled {
+.wp-block-tgp-copy-button:disabled {
 	opacity: 0.7;
 	cursor: not-allowed;
 }
 
-.tgp-copy-btn .tgp-btn-icon {
+.wp-block-tgp-copy-button__icon {
 	display: flex;
 	align-items: center;
 	flex-shrink: 0;
 }
 
-.tgp-copy-btn .tgp-btn-icon svg {
+.wp-block-tgp-copy-button__icon svg {
 	width: 1em;
 	height: 1em;
 }
 
-.tgp-copy-btn .tgp-btn-text {
+.wp-block-tgp-copy-button__text {
 	white-space: nowrap;
 }
 
 /* Loading state */
-.tgp-copy-btn.is-loading {
+.wp-block-tgp-copy-button.is-loading {
 	opacity: 0.7;
 	cursor: wait;
 }
 
-.tgp-copy-btn.is-loading .tgp-btn-icon svg {
-	animation: tgp-spin 1s linear infinite;
+.wp-block-tgp-copy-button.is-loading .wp-block-tgp-copy-button__icon svg {
+	animation: tgp-copy-button-spin 1s linear infinite;
 }
 
-@keyframes tgp-spin {
+@keyframes tgp-copy-button-spin {
 	from {
 		transform: rotate(0deg);
 	}

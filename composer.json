@@ -15,7 +15,15 @@
     "require-dev": {
         "wp-coding-standards/wpcs": "^3.0",
         "phpcompatibility/phpcompatibility-wp": "^2.1",
-        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpunit/phpunit": "^10.0",
+        "brain/monkey": "^2.6",
+        "mockery/mockery": "^1.6"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TGP\\LLMsTxt\\Tests\\": "tests/php/"
+        }
     },
     "config": {
         "allow-plugins": {
@@ -24,6 +32,8 @@
     },
     "scripts": {
         "lint": "phpcs",
-        "lint:fix": "phpcbf"
+        "lint:fix": "phpcbf",
+        "test": "phpunit",
+        "test:coverage": "phpunit --coverage-html coverage"
     }
 }

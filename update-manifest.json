@@ -1,0 +1,25 @@
+{
+  "name": "TGP LLMs.txt",
+  "slug": "tgp-llms-txt",
+  "version": "1.2.0",
+  "author": "<a href=\"https://thegrowthproject.com.au\">The Growth Project</a>",
+  "author_profile": "https://thegrowthproject.com.au",
+  "homepage": "https://github.com/thegrowthproject/wp-llms-txt",
+  "requires": "6.5",
+  "tested": "6.7",
+  "requires_php": "8.2",
+  "download_url": "https://github.com/thegrowthproject/wp-llms-txt/releases/download/v1.2.0/tgp-llms-txt.zip",
+  "last_updated": "2026-01-02",
+  "sections": {
+    "description": "Provides markdown endpoints for AI/LLM consumption. Adds .md URLs, /llms.txt index, and \"Copy for LLM\" buttons.",
+    "changelog": "<h4>1.2.0</h4><ul><li>Added blog-filters, blog-search, and blog-category-filter blocks</li><li>Added shared helper classes for block rendering</li><li>Added self-hosted plugin updates via GitHub releases</li></ul><h4>1.1.0</h4><ul><li>Migrated to WordPress Interactivity API</li><li>Added Block Supports for button styling</li></ul><h4>1.0.0</h4><ul><li>Initial release</li><li>Added /llms.txt endpoint</li><li>Added .md endpoints for posts and pages</li><li>Added copy-button and view-button blocks</li></ul>"
+  },
+  "banners": {
+    "low": "",
+    "high": ""
+  },
+  "icons": {
+    "1x": "",
+    "2x": ""
+  }
+}

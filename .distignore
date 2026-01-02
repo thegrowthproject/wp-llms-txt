@@ -25,6 +25,15 @@ CONTRIBUTING.md
 .DS_Store
 Thumbs.db
 
+# Testing
+tests/
+phpunit.xml.dist
+.wp-env.json
+playwright.config.js
+package.json
+package-lock.json
+coverage/
+
 # Build artifacts
 node_modules/
 *.log

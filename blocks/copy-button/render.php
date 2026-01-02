@@ -12,15 +12,19 @@
  * @var WP_Block $block      Block instance.
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 global $post;
 if ( ! $post ) {
 	return '';
 }
 
 // Get attributes with defaults.
+/* translators: Default button label for copy to clipboard action */
 $label     = $attributes['label'] ?? __( 'Copy for LLM', 'tgp-llms-txt' );
 $show_icon = $attributes['showIcon'] ?? true;
-$width     = $attributes['width'] ?? null;
 
 // Build markdown URL for fetching.
 $permalink = get_permalink( $post );
@@ -31,94 +35,28 @@ $context = [
 	'mdUrl'        => $md_url,
 	'copyState'    => 'idle',
 	'label'        => $label,
+	/* translators: Button text shown while copy operation is in progress */
 	'labelCopying' => __( 'Copying...', 'tgp-llms-txt' ),
+	/* translators: Button text shown after successful copy to clipboard */
 	'labelSuccess' => __( 'Copied!', 'tgp-llms-txt' ),
+	/* translators: Button text shown when copy operation fails */
 	'labelError'   => __( 'Failed', 'tgp-llms-txt' ),
 ];
 
 // Copy icon SVG.
 $copy_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
 
-// Allowed SVG tags for wp_kses.
-$allowed_svg = [
-	'svg'    => [
-		'xmlns'           => true,
-		'width'           => true,
-		'height'          => true,
-		'viewbox'         => true,
-		'fill'            => true,
-		'stroke'          => true,
-		'stroke-width'    => true,
-		'stroke-linecap'  => true,
-		'stroke-linejoin' => true,
-	],
-	'rect'   => [
-		'x'      => true,
-		'y'      => true,
-		'width'  => true,
-		'height' => true,
-		'rx'     => true,
-		'ry'     => true,
-	],
-	'path'   => [
-		'd' => true,
-	],
-	'circle' => [
-		'cx' => true,
-		'cy' => true,
-		'r'  => true,
-	],
-];
+// Get style attributes using shared helper.
+$style_attrs = TGP_Button_Block_Renderer::get_style_attributes( $attributes );
 
-// Get block wrapper attributes (includes styles and classes from Block Supports).
+// Get block wrapper attributes and detect style variation.
 $wrapper_attrs_string = get_block_wrapper_attributes();
+$variation_info       = TGP_Button_Block_Renderer::get_style_variation( $wrapper_attrs_string );
 
-// Parse the wrapper attributes string to extract classes and styles.
-$wrapper_classes = [];
-$wrapper_styles  = '';
-
-// Extract class attribute.
-if ( preg_match( '/class="([^"]*)"/', $wrapper_attrs_string, $class_matches ) ) {
-	$all_classes = explode( ' ', $class_matches[1] );
-
-	foreach ( $all_classes as $class ) {
-		$wrapper_classes[] = $class;
-	}
-}
-
-// Extract style attribute.
-if ( preg_match( '/style="([^"]*)"/', $wrapper_attrs_string, $style_matches ) ) {
-	$wrapper_styles = $style_matches[1];
-}
-
-// Build outer wrapper classes (block identifier + style variant + width).
-$outer_classes = [ 'wp-block-button' ];
-
-// Add is-style-* class to outer wrapper (needed for fill/outline styles).
-foreach ( $wrapper_classes as $class ) {
-	if ( strpos( $class, 'is-style-' ) === 0 ) {
-		$outer_classes[] = $class;
-	}
-}
-
-// Add width classes.
-if ( $width ) {
-	$outer_classes[] = 'has-custom-width';
-	$outer_classes[] = 'wp-block-button__width-' . $width;
-}
-
-// Build inner button classes (button styling classes + block support classes).
-$inner_classes = [ 'wp-block-button__link', 'wp-element-button', 'tgp-copy-btn' ];
-
-// Add has-* classes to inner button (color, background, etc.).
-foreach ( $wrapper_classes as $class ) {
-	if ( strpos( $class, 'has-' ) === 0 ) {
-		$inner_classes[] = $class;
-	}
-}
-
-// Build style attribute for inner button.
-$style_attr = $wrapper_styles ? ' style="' . esc_attr( $wrapper_styles ) . '"' : '';
+// Build classes and styles using shared helper.
+$outer_classes = TGP_Button_Block_Renderer::build_outer_classes( $style_attrs, $variation_info['variation'] );
+$inner_classes = TGP_Button_Block_Renderer::build_inner_classes( $style_attrs, 'wp-block-tgp-copy-button', $variation_info['has_variation'] );
+$style_attr    = TGP_Button_Block_Renderer::get_style_attribute( $style_attrs, $variation_info['has_variation'] );
 ?>
 <div
 	class="<?php echo esc_attr( implode( ' ', $outer_classes ) ); ?>"
@@ -128,14 +66,15 @@ $style_attr = $wrapper_styles ? ' style="' . esc_attr( $wrapper_styles ) . '"' :
 	<button
 		type="button"
 		class="<?php echo esc_attr( implode( ' ', $inner_classes ) ); ?>"<?php echo $style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		title="<?php esc_attr_e( 'Copy this content in markdown format for AI assistants', 'tgp-llms-txt' ); ?>"
+		title="<?php /* translators: Tooltip text for copy button */ esc_attr_e( 'Copy this content in markdown format for AI assistants', 'tgp-llms-txt' ); ?>"
 		data-wp-on--click="actions.copyMarkdown"
 		data-wp-bind--disabled="state.isDisabled"
 		data-wp-class--is-loading="state.isLoading"
 	>
 		<?php if ( $show_icon ) : ?>
-			<span class="tgp-btn-icon"><?php echo wp_kses( $copy_icon, $allowed_svg ); ?></span>
+			<span class="wp-block-tgp-copy-button__icon" aria-hidden="true"><?php echo wp_kses( $copy_icon, TGP_SVG_Sanitizer::get_allowed_tags() ); ?></span>
 		<?php endif; ?>
-		<span class="tgp-btn-text" data-wp-text="state.buttonText"><?php echo esc_html( $label ); ?></span>
+		<span class="wp-block-tgp-copy-button__text" role="status" aria-live="polite" data-wp-text="state.buttonText"><?php echo esc_html( $label ); ?></span>
+		<span class="screen-reader-text"><?php /* translators: Screen reader text describing the copy button action */ esc_html_e( 'Copy page content as markdown for AI assistants', 'tgp-llms-txt' ); ?></span>
 	</button>
 </div>

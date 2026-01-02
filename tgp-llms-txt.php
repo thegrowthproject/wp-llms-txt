@@ -3,7 +3,7 @@
  * Plugin Name: TGP LLMs.txt
  * Plugin URI: https://thegrowthproject.com.au
  * Description: Provides markdown endpoints for AI/LLM consumption. Adds .md URLs, /llms.txt index, and "Copy for LLM" buttons.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Requires at least: 6.5
  * Author: The Growth Project
  * Author URI: https://thegrowthproject.com.au
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TGP_LLMS_VERSION', '1.1.0' );
+define( 'TGP_LLMS_VERSION', '1.2.0' );
 define( 'TGP_LLMS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TGP_LLMS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -57,10 +57,19 @@ class TGP_LLMs_Txt {
 	 * Load required files.
 	 */
 	private function load_dependencies() {
+		// Shared helpers (used by blocks).
+		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-svg-sanitizer.php';
+		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-button-block-renderer.php';
+		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-pill-block-renderer.php';
+
+		// Core functionality.
 		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-markdown-converter.php';
 		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-frontmatter.php';
 		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-endpoint-handler.php';
 		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-llms-txt-generator.php';
+
+		// Self-hosted plugin updates.
+		require_once TGP_LLMS_PLUGIN_DIR . 'includes/class-plugin-updater.php';
 	}
 
 	/**
@@ -70,9 +79,21 @@ class TGP_LLMs_Txt {
 		// Initialize components.
 		new TGP_Endpoint_Handler();
 		new TGP_LLMs_Txt_Generator();
+		new TGP_Plugin_Updater();
 
 		// Register block.
 		add_action( 'init', [ $this, 'register_blocks' ] );
+
+		// Register button style variations for our blocks.
+		// Must run after theme.json is processed (wp_loaded is after init).
+		add_action( 'wp_loaded', [ $this, 'register_button_style_variations' ] );
+
+		// Generate CSS for button style variations on our blocks.
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_button_variation_styles' ] );
+		add_action( 'enqueue_block_editor_assets', [ $this, 'enqueue_button_variation_styles' ] );
+
+		// Add data-post-id attributes to Query Loop posts for blog filtering.
+		add_filter( 'render_block', [ $this, 'add_post_id_data_attribute' ], 10, 2 );
 
 		// Activation hook.
 		register_activation_hook( __FILE__, [ $this, 'activate' ] );
@@ -87,8 +108,10 @@ class TGP_LLMs_Txt {
 		register_block_type( TGP_LLMS_PLUGIN_DIR . 'blocks/copy-button' );
 		register_block_type( TGP_LLMS_PLUGIN_DIR . 'blocks/view-button' );
 
-		// Copy button styles from core/button to our custom button blocks.
-		$this->register_button_styles_from_theme();
+		// Register blog filter blocks.
+		register_block_type( TGP_LLMS_PLUGIN_DIR . 'blocks/blog-filters' );
+		register_block_type( TGP_LLMS_PLUGIN_DIR . 'blocks/blog-search' );
+		register_block_type( TGP_LLMS_PLUGIN_DIR . 'blocks/blog-category-filter' );
 
 		// Register block pattern.
 		register_block_pattern(
@@ -108,153 +131,146 @@ class TGP_LLMs_Txt {
 	}
 
 	/**
-	 * Register button styles from theme for our custom button blocks.
+	 * Register button style variations for our blocks.
 	 *
-	 * This copies any block styles registered for core/button (like Brand, Dark, Light, Tint)
-	 * and registers them for our tgp/copy-button and tgp/view-button blocks.
+	 * Gets the theme's button style variations and registers them for our blocks.
+	 * This runs after theme.json is processed so the variations are available.
 	 */
-	private function register_button_styles_from_theme() {
-		// Our custom button blocks.
+	public function register_button_style_variations() {
+		// Get theme's block style variations.
+		$variations = WP_Theme_JSON_Resolver::get_style_variations( 'block' );
+
+		if ( empty( $variations ) ) {
+			return;
+		}
+
+		// Our blocks to add button styles to.
 		$our_blocks = [ 'tgp/copy-button', 'tgp/view-button' ];
 
-		// Method 1: Copy PHP-registered styles from core/button.
-		$registry      = WP_Block_Styles_Registry::get_instance();
-		$button_styles = $registry->get_registered_styles_for_block( 'core/button' );
+		// Styles to skip (already defined in our block.json).
+		$skip_styles = [ 'fill', 'outline' ];
 
-		foreach ( $button_styles as $style_name => $style_props ) {
-			// Skip the default fill/outline styles - we define those in block.json.
-			if ( in_array( $style_name, [ 'fill', 'outline' ], true ) ) {
+		foreach ( $variations as $variation ) {
+			// Only process variations that target core/button.
+			if ( empty( $variation['blockTypes'] ) || ! in_array( 'core/button', $variation['blockTypes'], true ) ) {
 				continue;
 			}
 
+			$variation_name  = $variation['slug'] ?? ( isset( $variation['title'] ) ? sanitize_title( $variation['title'] ) : '' );
+			$variation_label = $variation['title'] ?? $variation_name;
+
+			// Skip if no valid name or if it's a default style.
+			if ( empty( $variation_name ) || in_array( $variation_name, $skip_styles, true ) ) {
+				continue;
+			}
+
+			// Register this variation for each of our blocks.
 			foreach ( $our_blocks as $block_name ) {
-				register_block_style( $block_name, $style_props );
-			}
-		}
-
-		// Method 2: Read JSON-based block style variations from theme.
-		$this->register_theme_json_button_styles( $our_blocks );
-	}
-
-	/**
-	 * Register JSON-based block style variations from the active theme.
-	 *
-	 * WordPress 6.x themes can define block style variations as JSON files in
-	 * styles/blocks/{block-name}/ directory. These aren't in the PHP registry,
-	 * so we read them directly and register for our blocks.
-	 *
-	 * @param array $our_blocks Array of our block names to register styles for.
-	 */
-	private function register_theme_json_button_styles( $our_blocks ) {
-		// Get the active theme's directory.
-		$theme_dir = get_stylesheet_directory();
-
-		// Look for button style variations in the theme.
-		$button_styles_dir = $theme_dir . '/styles/blocks/button';
-
-		if ( ! is_dir( $button_styles_dir ) ) {
-			return;
-		}
-
-		// Get all JSON files in the button styles directory.
-		$style_files = glob( $button_styles_dir . '/*.json' );
-
-		if ( empty( $style_files ) ) {
-			return;
-		}
-
-		foreach ( $style_files as $style_file ) {
-			$json_content = file_get_contents( $style_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			if ( ! $json_content ) {
-				continue;
-			}
-
-			$style_data = json_decode( $json_content, true );
-			if ( ! $style_data || ! isset( $style_data['title'], $style_data['slug'] ) ) {
-				continue;
-			}
-
-			// Check if this style is for core/button.
-			if ( ! isset( $style_data['blockTypes'] ) || ! in_array( 'core/button', $style_data['blockTypes'], true ) ) {
-				continue;
-			}
-
-			// Build the style properties for register_block_style().
-			$style_props = [
-				'name'  => $style_data['slug'],
-				'label' => $style_data['title'],
-			];
-
-			// If the style has CSS defined, include it.
-			if ( isset( $style_data['styles'] ) ) {
-				// Generate inline CSS from the style data.
-				$inline_css = $this->generate_style_css( $style_data['slug'], $style_data['styles'] );
-				if ( $inline_css ) {
-					$style_props['inline_style'] = $inline_css;
-				}
-			}
-
-			// Register for each of our blocks.
-			foreach ( $our_blocks as $block_name ) {
-				register_block_style( $block_name, $style_props );
+				register_block_style(
+					$block_name,
+					[
+						'name'  => $variation_name,
+						'label' => $variation_label,
+					]
+				);
 			}
 		}
 	}
 
 	/**
-	 * Generate CSS from block style variation data.
+	 * Enqueue CSS for button style variations on our blocks.
 	 *
-	 * @param string $slug   The style slug.
-	 * @param array  $styles The styles array from the JSON file.
-	 * @return string CSS string.
+	 * Since theme.json sanitization strips our blocks from variation data,
+	 * we generate the CSS ourselves by copying core/button variation styles.
+	 *
+	 * Also fixes outline style which has low specificity in WordPress core
+	 * and gets overridden by global-styles.
 	 */
-	private function generate_style_css( $slug, $styles ) {
+	public function enqueue_button_variation_styles() {
+		// Get merged theme.json data.
+		$theme_json = WP_Theme_JSON_Resolver::get_merged_data();
+		$data       = $theme_json->get_raw_data();
+
 		$css = '';
 
-		// Handle color styles.
-		if ( isset( $styles['color'] ) ) {
-			$color_css = [];
+		// Add outline style fix with higher specificity.
+		// WordPress core's outline CSS uses :where() which has 0 specificity,
+		// causing global-styles to override the text color to white.
+		// This CSS has specificity 0,3,0 which beats global-styles 0,0,1.
+		$css .= ".wp-block-button.is-style-outline .wp-block-button__link {\n";
+		$css .= "\tcolor: inherit;\n";
+		$css .= "\tbackground-color: transparent;\n";
+		$css .= "}\n";
 
-			if ( isset( $styles['color']['background'] ) ) {
-				$bg = $this->resolve_preset_value( $styles['color']['background'] );
-				if ( $bg ) {
-					$color_css[] = 'background-color: ' . $bg;
+		// Check if core/button has variations for other styles.
+		if ( isset( $data['styles']['blocks']['core/button']['variations'] ) ) {
+			$variations = $data['styles']['blocks']['core/button']['variations'];
+
+			// Generate CSS for each variation on our blocks.
+			foreach ( $variations as $variation_name => $variation_data ) {
+				// Skip outline (handled above).
+				if ( 'outline' === $variation_name ) {
+					continue;
 				}
-			}
 
-			if ( isset( $styles['color']['text'] ) ) {
-				$text = $this->resolve_preset_value( $styles['color']['text'] );
-				if ( $text ) {
-					$color_css[] = 'color: ' . $text;
+				// Extract color values.
+				$bg_color   = $variation_data['color']['background'] ?? null;
+				$text_color = $variation_data['color']['text'] ?? null;
+
+				if ( ! $bg_color && ! $text_color ) {
+					continue;
 				}
-			}
 
-			if ( ! empty( $color_css ) ) {
-				// Target both our button blocks with this style.
-				$css .= '.wp-block-button.is-style-' . $slug . ' .wp-block-button__link { ' . implode( '; ', $color_css ) . '; }';
+				// Generate CSS for this variation.
+				$selector = ".wp-block-button.is-style-{$variation_name} .wp-block-button__link";
+				$styles   = [];
+
+				if ( $bg_color ) {
+					$styles[] = "background-color: {$bg_color}";
+				}
+				if ( $text_color ) {
+					$styles[] = "color: {$text_color}";
+				}
+
+				if ( ! empty( $styles ) ) {
+					$css .= "{$selector} { " . implode( '; ', $styles ) . "; }\n";
+				}
 			}
 		}
 
-		return $css;
+		// Enqueue inline CSS.
+		wp_register_style( 'tgp-llms-button-variations', false, [], TGP_LLMS_VERSION );
+		wp_enqueue_style( 'tgp-llms-button-variations' );
+		wp_add_inline_style( 'tgp-llms-button-variations', $css );
 	}
 
 	/**
-	 * Resolve a preset value reference to a CSS custom property.
+	 * Add data-post-id attribute to Query Loop post template elements.
 	 *
-	 * @param string $value The value, possibly a preset reference like "var:preset|color|primary".
-	 * @return string The resolved CSS value.
+	 * This enables the blog-filters block to find and filter posts rendered
+	 * by the core Query Loop block.
+	 *
+	 * @param string $block_content The block content.
+	 * @param array  $block         The block data.
+	 * @return string Modified block content.
 	 */
-	private function resolve_preset_value( $value ) {
-		// Handle var:preset|type|slug format.
-		if ( strpos( $value, 'var:' ) === 0 ) {
-			$parts = explode( '|', substr( $value, 4 ) );
-			if ( count( $parts ) === 3 && 'preset' === $parts[0] ) {
-				return 'var(--wp--preset--' . $parts[1] . '--' . $parts[2] . ')';
-			}
+	public function add_post_id_data_attribute( $block_content, $block ) {
+		// Only process core/post-template blocks.
+		if ( 'core/post-template' !== $block['blockName'] ) {
+			return $block_content;
 		}
 
-		// Return as-is if it's a direct value.
-		return $value;
+		// Add data-post-id to each <li> element with post-{id} class.
+		$block_content = preg_replace_callback(
+			'/<li\s+class="([^"]*\bpost-(\d+)\b[^"]*)"/',
+			function ( $matches ) {
+				$post_id = $matches[2];
+				return '<li data-post-id="' . esc_attr( $post_id ) . '" class="' . $matches[1] . '"';
+			},
+			$block_content
+		);
+
+		return $block_content;
 	}
 
 	/**

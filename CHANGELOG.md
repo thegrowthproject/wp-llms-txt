@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-01-02
+
+### Added
+- **Blog Filters blocks** — Three new blocks for filtering blog archives:
+  - `tgp/blog-filters` — Parent container with Interactivity API state management
+  - `tgp/blog-category-filter` — Category pills with active state styling
+  - `tgp/blog-search` — Search input with icon and clear button
+- **Testing infrastructure:**
+  - PHPUnit with Brain Monkey (38 tests for shared helpers)
+  - Jest with Interactivity API mock (21 tests for stores)
+  - Playwright E2E tests for frontend rendering
+  - GitHub Actions workflow for E2E tests
+- **Architecture Decision Records** — Documented key technical decisions:
+  - ADR-001: State vs Context in Interactivity API
+  - ADR-002: Skip serialization pattern for style variations
+  - ADR-003: Shared PHP helper classes
+- **Shared helper classes:**
+  - `TGP_Button_Block_Renderer` — Consolidated button rendering logic
+  - `TGP_Pill_Block_Renderer` — Pill/filter button rendering
+  - `TGP_SVG_Sanitizer` — Centralized SVG wp_kses configuration
+- **New filters:**
+  - `tgp_llms_txt_description` — Customize llms.txt site description
+  - `tgp_llms_txt_contact_url` — Customize contact page path
+  - `tgp_llms_txt_pages` — Customize page listings
+- `uninstall.php` for proper plugin cleanup
+
+### Changed
+- **BREAKING:** CSS class names migrated to BEM pattern
+  - Before: `.tgp-copy-btn`, `.tgp-btn-icon`
+  - After: `.wp-block-tgp-copy-button`, `.wp-block-tgp-copy-button__icon`
+- Moved posts data from context to global state (reduces HTML payload)
+- Refactored button render.php files (70%+ code reduction via shared helpers)
+- Improved empty state styling for blog filters
+
+### Fixed
+- Button style variations now apply correctly (skip serialization pattern)
+- ABSPATH security check added to all PHP files
+- Accessibility improvements:
+  - `aria-hidden` on decorative icons
+  - `aria-live="polite"` for copy button status announcements
+  - Screen reader text for button context
+  - Translator comments on all i18n strings
+
+### Documentation
+- Comprehensive README with usage instructions and development guide
+- Testing guide (`docs/TESTING.md`)
+- Block development patterns (`docs/BLOCK-DEVELOPMENT.md`)
+- Button styling guide (`docs/BUTTON-STYLING.md`)
+- README files for each block directory
+
 ## [1.1.0] - 2025-12-31
 
 ### Changed

@@ -1,5 +1,10 @@
 # WP LLMs Plugin
 
+[![CI](https://github.com/thegrowthproject/wp-llms-txt/actions/workflows/lint.yml/badge.svg)](https://github.com/thegrowthproject/wp-llms-txt/actions/workflows/lint.yml)
+![WordPress 6.5+](https://img.shields.io/badge/WordPress-6.5%2B-blue?logo=wordpress)
+![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-purple?logo=php)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL_v2-blue.svg)](https://www.gnu.org/licenses/gpl-2.0)
+
 A WordPress plugin that makes your site readable by AI systems.
 
 Built by [The Growth Project](https://thegrowthproject.com.au).
@@ -23,6 +28,91 @@ This plugin implements the llms.txt standard for WordPress:
 3. **`.md` endpoints** — Every page and post available as clean markdown (e.g., `/about.md`)
 
 AI tools can now crawl your site efficiently. Your content is accessible in a format they understand.
+
+## Usage
+
+### Copy for LLM Button
+
+Add a button that copies the current page content as markdown to the clipboard.
+
+1. Open the block editor for any page or post
+2. Click the **+** inserter and search for "Copy for LLM"
+3. Insert the block where you want the button to appear
+4. The button inherits your theme's button styles automatically
+
+<!-- Screenshot: copy-button-inserter.png -->
+*Block inserter showing "Copy for LLM" block*
+
+When clicked, the button:
+- Shows "Copying..." during fetch
+- Fetches content from the `.md` endpoint
+- Copies markdown to clipboard
+- Shows "Copied!" confirmation
+
+<!-- Screenshot: copy-button-states.png -->
+*Button states: default, copying, copied*
+
+### View as Markdown Button
+
+Add a link that opens the markdown version of the current page.
+
+1. Open the block editor for any page or post
+2. Click the **+** inserter and search for "View as Markdown"
+3. Insert the block where you want the link to appear
+
+The link automatically points to the current page's `.md` URL (e.g., `/about.md`).
+
+### LLM Buttons Pattern
+
+For convenience, both buttons are available as a pattern:
+
+1. Click the **+** inserter
+2. Switch to the **Patterns** tab
+3. Search for "LLM Buttons"
+4. Insert the pattern to get both buttons in a row
+
+<!-- Screenshot: llm-buttons-pattern.png -->
+*LLM Buttons pattern with both buttons*
+
+### Blog Filters (Bonus Blocks)
+
+This plugin includes three blocks for filtering blog archives. These demonstrate WordPress Interactivity API patterns with shared global state.
+
+#### Blog Category Filter
+
+Displays category pills for filtering posts without page reload.
+
+```
+<!-- wp:tgp/blog-category-filter /-->
+```
+
+<!-- Screenshot: blog-category-filter.png -->
+*Category filter pills with active state*
+
+#### Blog Search
+
+Search input that filters posts in real-time.
+
+```
+<!-- wp:tgp/blog-search /-->
+```
+
+#### Blog Filters (Container)
+
+Orchestrates the filter state and provides the post list. Wrap your query loop with this block.
+
+```
+<!-- wp:tgp/blog-filters -->
+    <!-- wp:tgp/blog-category-filter /-->
+    <!-- wp:tgp/blog-search /-->
+    <!-- Your query loop here -->
+<!-- /wp:tgp/blog-filters -->
+```
+
+The three blocks share state via the WordPress Interactivity API. Changing a category or search term updates all blocks and filters the visible posts.
+
+<!-- Screenshot: blog-filters-demo.gif -->
+*Blog filters in action: category selection and search*
 
 ## GEO: Generative Engine Optimization
 
@@ -64,57 +154,134 @@ No configuration needed. It works out of the box.
 | `/page-slug.md` | `text/markdown` | Individual page as markdown with YAML frontmatter |
 | `/blog/post-slug.md` | `text/markdown` | Individual post as markdown with YAML frontmatter |
 
+## Development
+
+This plugin is open source and demonstrates production engineering practices.
+
+### Documentation
+
+| Document | Description |
+|----------|-------------|
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute, code style, PR process |
+| [docs/TESTING.md](docs/TESTING.md) | Testing guide: PHPUnit, Jest, Playwright |
+| [docs/BLOCK-DEVELOPMENT.md](docs/BLOCK-DEVELOPMENT.md) | Block development patterns and Interactivity API |
+| [docs/BUTTON-STYLING.md](docs/BUTTON-STYLING.md) | Block Supports API and theme integration |
+
+### Architecture Decisions
+
+Significant technical decisions are documented as ADRs:
+
+| ADR | Decision |
+|-----|----------|
+| [001](docs/adr/001-interactivity-api-state-vs-context.md) | State vs Context in Interactivity API |
+| [002](docs/adr/002-skip-serialization-pattern.md) | Skip serialization for server-rendered blocks |
+| [003](docs/adr/003-shared-helper-classes.md) | Shared PHP helper classes for block rendering |
+
+### Testing
+
+```bash
+# Install dependencies
+composer install
+npm install
+
+# Run tests
+composer test        # PHPUnit (PHP logic)
+npm test             # Jest (JS stores)
+npm run test:e2e     # Playwright (browser tests, requires Docker)
+
+# Linting
+composer lint        # PHPCS
+```
+
+Tests run automatically on GitHub Actions for every push and pull request.
+
+### Local Development
+
+The plugin uses `@wordpress/env` for local development:
+
+```bash
+npm run wp-env start   # Start WordPress environment
+npm run wp-env stop    # Stop environment
+```
+
 ## Plugin Structure
 
 ```
 tgp-llms-txt/
-├── tgp-llms-txt.php              # Main plugin file, bootstraps everything
+├── tgp-llms-txt.php              # Main plugin file
 ├── includes/
-│   ├── class-endpoint-handler.php    # Routes requests to .md and llms.txt
-│   ├── class-llms-txt-generator.php  # Generates the /llms.txt index
-│   ├── class-markdown-converter.php  # Converts Gutenberg HTML to markdown
-│   └── class-frontmatter.php         # Generates YAML frontmatter for .md files
-└── blocks/
-    ├── copy-button/                  # "Copy for LLM" button block
-    │   ├── block.json
-    │   ├── index.js
-    │   ├── view.js                   # Interactivity API store
-    │   ├── render.php
-    │   └── style.css
-    └── view-button/                  # "View as Markdown" link block
-        ├── block.json
-        ├── index.js
-        ├── render.php
-        └── style.css
+│   ├── class-endpoint-handler.php     # Routes .md and llms.txt requests
+│   ├── class-llms-txt-generator.php   # Generates /llms.txt index
+│   ├── class-markdown-converter.php   # Gutenberg to markdown conversion
+│   ├── class-frontmatter.php          # YAML frontmatter generation
+│   ├── class-button-block-renderer.php    # Shared button rendering logic
+│   └── class-pill-block-renderer.php      # Shared pill/filter rendering
+├── blocks/
+│   ├── copy-button/              # "Copy for LLM" button
+│   │   ├── block.json
+│   │   ├── index.js              # Editor component
+│   │   ├── view.js               # Interactivity API store
+│   │   ├── render.php            # Server-side rendering
+│   │   └── style.css
+│   ├── view-button/              # "View as Markdown" link
+│   │   ├── block.json
+│   │   ├── index.js
+│   │   ├── render.php
+│   │   └── style.css
+│   ├── blog-filters/             # Filter state orchestrator
+│   │   ├── block.json
+│   │   ├── index.js
+│   │   ├── view.js               # Global filter state
+│   │   └── render.php
+│   ├── blog-category-filter/     # Category pills
+│   │   ├── block.json
+│   │   ├── index.js
+│   │   ├── view.js
+│   │   ├── render.php
+│   │   └── style.css
+│   └── blog-search/              # Search input
+│       ├── block.json
+│       ├── index.js
+│       ├── view.js
+│       ├── render.php
+│       └── style.css
+├── tests/
+│   ├── php/                      # PHPUnit tests
+│   ├── js/                       # Jest tests
+│   └── e2e/                      # Playwright tests
+└── docs/
+    ├── TESTING.md
+    ├── BLOCK-DEVELOPMENT.md
+    ├── BUTTON-STYLING.md
+    └── adr/                      # Architecture Decision Records
 ```
 
 ### Core Classes
 
 **`TGP_Endpoint_Handler`**
-Intercepts requests early in the WordPress lifecycle. Matches URL patterns (`*.md`, `llms.txt`) and routes them to the appropriate handler. Uses both `init` hook (priority 0) for direct matching and rewrite rules for WordPress-standard routing.
+Intercepts requests early in the WordPress lifecycle. Matches URL patterns (`*.md`, `llms.txt`) and routes them to the appropriate handler.
 
 **`TGP_LLMs_Txt_Generator`**
 Builds the `/llms.txt` index file. Queries all published pages and posts, groups posts by category, and formats everything according to the llmstxt.org specification.
 
 **`TGP_Markdown_Converter`**
-The heavy lifter. Converts WordPress Gutenberg block content to clean markdown:
-- Strips `<!-- wp:block -->` comments
-- Converts headings, paragraphs, lists, tables, blockquotes
-- Handles inline elements (bold, italic, links, code)
-- Cleans up whitespace and entities
+Converts WordPress Gutenberg block content to clean markdown. Handles headings, paragraphs, lists, tables, blockquotes, and inline formatting.
 
 **`TGP_Frontmatter`**
 Generates YAML frontmatter for individual `.md` endpoints. Includes title, URL, date, author, and excerpt metadata.
 
+**`TGP_Button_Block_Renderer`** / **`TGP_Pill_Block_Renderer`**
+Shared helper classes for consistent block rendering. Extract Block Supports styles, build class names, generate inline styles.
+
 ### Gutenberg Blocks
 
-**Copy for LLM** (`tgp/copy-button`)
-Copies the current page content as markdown to clipboard. Uses WordPress Interactivity API for reactive state management. Fetches directly from the `.md` endpoint.
-
-**View as Markdown** (`tgp/view-button`)
-Opens the `.md` version of the current page in a new tab.
-
-Both blocks inherit theme button styles automatically via WordPress Block Supports API.
+| Block | Purpose | Interactivity |
+|-------|---------|---------------|
+| `tgp/copy-button` | Copy page as markdown | Local context |
+| `tgp/view-button` | Link to .md endpoint | None (static) |
+| `tgp/blog-filters` | Filter state container | Global state provider |
+| `tgp/blog-category-filter` | Category pill filters | Reads global state |
+| `tgp/blog-search` | Search input | Reads/writes global state |
 
 ## How It Works
 
