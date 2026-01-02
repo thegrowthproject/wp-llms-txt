@@ -212,13 +212,13 @@ Violations may result in:
 2. Temporary ban from participation
 3. Permanent ban from the project
 
-Report issues to [thegrowthproject.com.au/contact](https://thegrowthproject.com.au/contact).
+Report issues to [thegrowthproject.com/contact](https://thegrowthproject.com/contact).
 
 ## Questions?
 
 - Check [existing issues](https://github.com/thegrowthproject/wp-llms-txt/issues)
 - Open a new issue for bugs or feature requests
-- Contact us at [thegrowthproject.com.au/contact](https://thegrowthproject.com/contact)
+- Contact us at [thegrowthproject.com/contact](https://thegrowthproject.com/contact)
 
 ## License
 
