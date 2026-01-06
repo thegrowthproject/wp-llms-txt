@@ -5,10 +5,9 @@
 .gitignore
 .distignore
 
-# Composer dev dependencies
+# Composer dev dependencies (vendor is included for autoloading)
 composer.json
 composer.lock
-vendor/
 phpcs.xml.dist
 
 # Documentation (dev only)
