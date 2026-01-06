@@ -54,6 +54,10 @@ jobs:
       - name: Verify plugin is active
         run: |
           npm run wp-env run cli wp plugin list
+          echo "Checking .htaccess content..."
+          npm run wp-env run cli -- cat /var/www/html/.htaccess || true
+          echo "Checking Apache modules..."
+          npm run wp-env run tests-wordpress -- apache2ctl -M 2>&1 | grep rewrite || true
           echo "Testing /llms.txt endpoint..."
           curl -v http://localhost:8888/llms.txt || true
 
