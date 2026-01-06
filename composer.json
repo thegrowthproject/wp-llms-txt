@@ -42,6 +42,6 @@
         "lint:fix": "phpcbf",
         "test": "phpunit",
         "test:coverage": "phpunit --coverage-html coverage",
-        "analyze": "phpstan analyze --memory-limit=512M"
+        "analyze": "phpstan analyze --memory-limit=1G"
     }
 }
