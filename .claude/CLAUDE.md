@@ -400,6 +400,16 @@ Order matters — block elements before inline elements.
 - Follow conventional commit format: `type: description`
 - Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
 
+### Git Hook Setup
+
+A commit-msg hook enforces the no-attribution rule. Set it up after cloning:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The hook will reject commits containing Claude Code attribution.
+
 ## What Not to Change
 
 - **Hook priorities** — `init` at priority 0 for early request interception
