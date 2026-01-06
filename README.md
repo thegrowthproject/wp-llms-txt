@@ -298,6 +298,38 @@ The same flow applies to `/llms.txt`, except `TGP_LLMs_Txt_Generator` builds the
 
 Responses include a `Cache-Control: public, max-age=3600` header (1 hour). For production sites with caching plugins, the `.md` and `.txt` endpoints will be cached like any other page.
 
+## Rate Limiting
+
+The `/llms.txt` and `*.md` endpoints include rate limiting to prevent abuse:
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests per window (default: 100) |
+| `X-RateLimit-Remaining` | Requests remaining in current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window resets |
+
+**Default limits:**
+- 100 requests per minute per IP address
+- Returns `429 Too Many Requests` with `Retry-After` header when exceeded
+
+### Customizing the Rate Limit
+
+Use the `tgp_llms_txt_rate_limit` filter to adjust limits:
+
+```php
+// Increase limit for trusted IPs
+add_filter( 'tgp_llms_txt_rate_limit', function( $limit, $ip ) {
+    $trusted_ips = [ '10.0.0.1', '192.168.1.100' ];
+    if ( in_array( $ip, $trusted_ips, true ) ) {
+        return 1000; // Higher limit for trusted sources
+    }
+    return $limit;
+}, 10, 2 );
+
+// Disable rate limiting entirely (not recommended)
+add_filter( 'tgp_llms_txt_rate_limit', '__return_zero' );
+```
+
 ## Requirements
 
 - WordPress 6.5+ (Interactivity API required)

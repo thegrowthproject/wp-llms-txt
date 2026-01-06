@@ -26,3 +26,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once dirname( __DIR__, 2 ) . '/includes/class-svg-sanitizer.php';
 require_once dirname( __DIR__, 2 ) . '/includes/class-button-block-renderer.php';
 require_once dirname( __DIR__, 2 ) . '/includes/class-pill-block-renderer.php';
+require_once dirname( __DIR__, 2 ) . '/includes/class-endpoint-handler.php';
