@@ -3,6 +3,7 @@
  * Rate Limiter
  *
  * Handles IP-based rate limiting for plugin endpoints.
+ * Supports Redis/Memcached via WordPress object cache.
  *
  * @package TGP_LLMs_Txt
  */
@@ -18,7 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Rate Limiter class.
  *
- * Provides transient-based rate limiting per IP address.
+ * Provides object cache-based rate limiting per IP address.
+ * Automatically uses Redis/Memcached when a persistent object cache
+ * plugin is installed, otherwise falls back to in-memory cache.
  */
 class RateLimiter {
 
@@ -37,11 +40,18 @@ class RateLimiter {
 	private int $window = 60;
 
 	/**
-	 * Transient key prefix.
+	 * Cache key prefix.
 	 *
 	 * @var string
 	 */
-	private const TRANSIENT_PREFIX = 'tgp_llms_rate_';
+	private const CACHE_PREFIX = 'tgp_llms_rate_';
+
+	/**
+	 * Cache group for rate limiting.
+	 *
+	 * @var string
+	 */
+	private const CACHE_GROUP = 'tgp_llms_txt';
 
 	/**
 	 * Check rate limit and return info.
@@ -52,11 +62,11 @@ class RateLimiter {
 	 * @return array{limit: int, remaining: int, reset: int} Rate limit info for headers.
 	 */
 	public function check(): array {
-		$ip            = $this->get_client_ip();
-		$transient_key = self::TRANSIENT_PREFIX . md5( $ip );
+		$ip        = $this->get_client_ip();
+		$cache_key = self::CACHE_PREFIX . md5( $ip );
 
-		// Get current request count and timestamp.
-		$rate_data = get_transient( $transient_key );
+		// Get current request count and timestamp from object cache.
+		$rate_data = wp_cache_get( $cache_key, self::CACHE_GROUP );
 
 		if ( false === $rate_data ) {
 			$rate_data = [
@@ -92,8 +102,8 @@ class RateLimiter {
 		// Calculate remaining requests.
 		$remaining = max( 0, $limit - $rate_data['count'] );
 
-		// Store updated count.
-		set_transient( $transient_key, $rate_data, $this->window );
+		// Store updated count in object cache.
+		wp_cache_set( $cache_key, $rate_data, self::CACHE_GROUP, $this->window );
 
 		// Check if over limit.
 		if ( $rate_data['count'] > $limit ) {

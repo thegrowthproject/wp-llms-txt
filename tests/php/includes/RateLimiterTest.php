@@ -149,12 +149,13 @@ class RateLimiterTest extends TestCase {
 	public function test_check_creates_new_rate_data(): void {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 
-		Functions\when( 'get_transient' )->justReturn( false );
-		Functions\expect( 'set_transient' )
+		Functions\when( 'wp_cache_get' )->justReturn( false );
+		Functions\expect( 'wp_cache_set' )
 			->once()
 			->andReturnUsing(
-				function ( $key, $value, $expiration ) {
+				function ( $key, $value, $group, $expiration ) {
 					$this->assertStringStartsWith( 'tgp_llms_rate_', $key );
+					$this->assertEquals( 'tgp_llms_txt', $group );
 					$this->assertEquals( 1, $value['count'] );
 					$this->assertEquals( 60, $expiration );
 					return true;
@@ -179,17 +180,17 @@ class RateLimiterTest extends TestCase {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 		$start_time             = time();
 
-		Functions\when( 'get_transient' )->justReturn(
+		Functions\when( 'wp_cache_get' )->justReturn(
 			[
 				'count' => 10,
 				'start' => $start_time,
 			]
 		);
-		Functions\expect( 'set_transient' )
+		Functions\expect( 'wp_cache_set' )
 			->once()
 			->andReturnUsing(
 				// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Mock callback signature.
-				function ( $key, $value, $expiration ) {
+				function ( $key, $value, $group, $expiration ) {
 					$this->assertEquals( 11, $value['count'] );
 					return true;
 				}
@@ -209,17 +210,17 @@ class RateLimiterTest extends TestCase {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 		$old_start              = time() - 120; // 2 minutes ago.
 
-		Functions\when( 'get_transient' )->justReturn(
+		Functions\when( 'wp_cache_get' )->justReturn(
 			[
 				'count' => 50,
 				'start' => $old_start,
 			]
 		);
-		Functions\expect( 'set_transient' )
+		Functions\expect( 'wp_cache_set' )
 			->once()
 			->andReturnUsing(
 				// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Mock callback signature.
-				function ( $key, $value, $expiration ) {
+				function ( $key, $value, $group, $expiration ) {
 					// Count should be reset to 1 (this request).
 					$this->assertEquals( 1, $value['count'] );
 					// Start time should be current.
@@ -240,8 +241,8 @@ class RateLimiterTest extends TestCase {
 	public function test_check_respects_filter(): void {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 
-		Functions\when( 'get_transient' )->justReturn( false );
-		Functions\when( 'set_transient' )->justReturn( true );
+		Functions\when( 'wp_cache_get' )->justReturn( false );
+		Functions\when( 'wp_cache_set' )->justReturn( true );
 		Functions\expect( 'apply_filters' )
 			->once()
 			->with( 'tgp_llms_txt_rate_limit', 100, '192.168.1.100' )
@@ -260,13 +261,13 @@ class RateLimiterTest extends TestCase {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 		$start_time             = time();
 
-		Functions\when( 'get_transient' )->justReturn(
+		Functions\when( 'wp_cache_get' )->justReturn(
 			[
 				'count' => 99, // Will be incremented to 100.
 				'start' => $start_time,
 			]
 		);
-		Functions\when( 'set_transient' )->justReturn( true );
+		Functions\when( 'wp_cache_set' )->justReturn( true );
 		Functions\when( 'apply_filters' )->justReturn( 100 );
 
 		$result = $this->rate_limiter->check();
@@ -275,18 +276,18 @@ class RateLimiterTest extends TestCase {
 	}
 
 	/**
-	 * Test rate limit uses consistent transient key for same IP.
+	 * Test rate limit uses consistent cache key for same IP.
 	 */
 	public function test_rate_limit_uses_consistent_key(): void {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 		$expected_key           = 'tgp_llms_rate_' . md5( '192.168.1.100' );
 
-		Functions\when( 'get_transient' )->justReturn( false );
-		Functions\expect( 'set_transient' )
+		Functions\when( 'wp_cache_get' )->justReturn( false );
+		Functions\expect( 'wp_cache_set' )
 			->once()
 			->andReturnUsing(
 				// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Mock callback signature.
-				function ( $key, $value, $expiration ) use ( $expected_key ) {
+				function ( $key, $value, $group, $expiration ) use ( $expected_key ) {
 					$this->assertEquals( $expected_key, $key );
 					return true;
 				}
