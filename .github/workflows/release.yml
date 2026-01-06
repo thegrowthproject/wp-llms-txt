@@ -18,6 +18,15 @@ jobs:
         with:
           ref: main
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      - name: Install Composer dependencies (production only)
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
       - name: Get version from tag
         id: version
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
