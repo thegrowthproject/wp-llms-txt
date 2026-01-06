@@ -49,7 +49,19 @@ jobs:
         run: |
           npm run wp-env run cli wp plugin activate wp-llms-txt
           npm run wp-env run cli wp rewrite structure '/%postname%/'
-          npm run wp-env run cli wp rewrite flush --hard
+          # Create .htaccess manually since wp rewrite flush doesn't create it in Docker
+          npm run wp-env run tests-wordpress -- bash -c 'cat > /var/www/html/.htaccess << EOF
+          # BEGIN WordPress
+          <IfModule mod_rewrite.c>
+          RewriteEngine On
+          RewriteBase /
+          RewriteRule ^index\.php$ - [L]
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule . /index.php [L]
+          </IfModule>
+          # END WordPress
+          EOF'
 
       - name: Verify plugin is active
         run: |
