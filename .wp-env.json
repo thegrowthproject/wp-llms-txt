@@ -4,9 +4,6 @@
 	"plugins": [
 		"."
 	],
-	"mappings": {
-		"wp-content/plugins/tgp-llms-txt": "."
-	},
 	"config": {
 		"WP_DEBUG": true,
 		"WP_DEBUG_LOG": true,

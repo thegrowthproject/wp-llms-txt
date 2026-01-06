@@ -46,7 +46,7 @@ jobs:
 
       - name: Activate plugin and flush rewrite rules
         run: |
-          npm run wp-env run cli wp plugin activate tgp-llms-txt
+          npm run wp-env run cli wp plugin activate wp-llms-txt
           npm run wp-env run cli wp rewrite flush
 
       - name: Verify plugin is active
