@@ -10,7 +10,7 @@ namespace TGP\LLMsTxt\Tests;
 use PHPUnit\Framework\TestCase;
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use TGP_Endpoint_Handler;
+use TGP\LLMsTxt\EndpointHandler;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -22,9 +22,9 @@ class EndpointHandlerRateLimitTest extends TestCase {
 	/**
 	 * The handler instance.
 	 *
-	 * @var TGP_Endpoint_Handler
+	 * @var EndpointHandler
 	 */
-	private TGP_Endpoint_Handler $handler;
+	private EndpointHandler $handler;
 
 	/**
 	 * Reflection class for accessing private methods.
@@ -50,7 +50,7 @@ class EndpointHandlerRateLimitTest extends TestCase {
 		Functions\when( 'wp_unslash' )->returnArg();
 
 		// Create handler instance (constructor calls hooks, which we've mocked).
-		$this->reflection = new ReflectionClass( TGP_Endpoint_Handler::class );
+		$this->reflection = new ReflectionClass( EndpointHandler::class );
 		$this->handler    = $this->reflection->newInstanceWithoutConstructor();
 	}
 

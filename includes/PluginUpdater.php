@@ -7,6 +7,10 @@
  * @package TGP_LLMs_Txt
  */
 
+declare(strict_types=1);
+
+namespace TGP\LLMsTxt;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -17,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Hooks into WordPress update system to check for and install updates
  * from a self-hosted JSON manifest (GitHub releases).
  */
-class TGP_Plugin_Updater {
+class PluginUpdater {
 
 	/**
 	 * Plugin slug (directory name).
@@ -62,20 +66,32 @@ class TGP_Plugin_Updater {
 	private $cache_expiration = 43200;
 
 	/**
-	 * Constructor.
+	 * Initialize the plugin updater.
+	 *
+	 * Creates a new instance and registers all WordPress hooks.
+	 * Call this method once during plugin initialization.
 	 */
-	public function __construct() {
-		$this->basename     = plugin_basename( TGP_LLMS_PLUGIN_DIR . 'tgp-llms-txt.php' );
-		$this->version      = TGP_LLMS_VERSION;
-		$this->manifest_url = 'https://raw.githubusercontent.com/thegrowthproject/wp-llms-txt/main/update-manifest.json';
-
-		$this->init_hooks();
+	public static function init(): void {
+		$instance = new self();
+		$instance->register_hooks();
 	}
 
 	/**
-	 * Initialize hooks.
+	 * Constructor.
+	 *
+	 * Private to enforce use of init() method.
+	 * Sets up instance properties only - no side effects.
 	 */
-	private function init_hooks(): void {
+	private function __construct() {
+		$this->basename     = plugin_basename( TGP_LLMS_PLUGIN_DIR . 'tgp-llms-txt.php' );
+		$this->version      = TGP_LLMS_VERSION;
+		$this->manifest_url = 'https://raw.githubusercontent.com/thegrowthproject/wp-llms-txt/main/update-manifest.json';
+	}
+
+	/**
+	 * Register WordPress hooks.
+	 */
+	private function register_hooks(): void {
 		// Check for updates when WordPress checks the plugin transient.
 		add_filter( 'site_transient_update_plugins', [ $this, 'check_for_update' ] );
 
@@ -299,8 +315,8 @@ class TGP_Plugin_Updater {
 	/**
 	 * Clear cached update data after plugin update.
 	 *
-	 * @param WP_Upgrader $upgrader   The upgrader instance.
-	 * @param array       $hook_extra Extra hook arguments.
+	 * @param \WP_Upgrader $upgrader   The upgrader instance.
+	 * @param array        $hook_extra Extra hook arguments.
 	 */
 	public function clear_cache( object $upgrader, array $hook_extra ): void {
 		if ( 'plugin' === ( $hook_extra['type'] ?? '' ) && 'update' === ( $hook_extra['action'] ?? '' ) ) {

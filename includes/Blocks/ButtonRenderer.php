@@ -8,6 +8,10 @@
  * @package TGP_LLMs_Txt
  */
 
+declare(strict_types=1);
+
+namespace TGP\LLMsTxt\Blocks;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -17,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Consolidates duplicate rendering logic used by copy-button and view-button blocks.
  */
-class TGP_Button_Block_Renderer {
+class ButtonRenderer {
 
 	/**
 	 * Validate a CSS color value.

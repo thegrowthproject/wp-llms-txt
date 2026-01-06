@@ -3,23 +3,46 @@
  * Endpoint Handler
  *
  * Registers and handles custom URL endpoints for markdown content
+ *
+ * @package TGP_LLMs_Txt
  */
+
+declare(strict_types=1);
+
+namespace TGP\LLMsTxt;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TGP_Endpoint_Handler {
+/**
+ * Endpoint Handler class.
+ */
+class EndpointHandler {
 
 	/**
-	 * Constructor
+	 * Initialize the endpoint handler.
+	 *
+	 * Creates a new instance and registers all WordPress hooks.
+	 * Call this method once during plugin initialization.
 	 */
-	public function __construct() {
-		// Check for our endpoints at init (priority 0 = earliest)
-		add_action( 'init', [ $this, 'check_for_custom_endpoints' ], 0 );
-		add_action( 'init', [ $this, 'add_rewrite_rules' ], 1 );
-		add_filter( 'query_vars', [ $this, 'add_query_vars' ] );
-		add_action( 'template_redirect', [ $this, 'handle_request' ], 1 );
+	public static function init(): void {
+		$instance = new self();
+
+		// Check for our endpoints at init (priority 0 = earliest).
+		add_action( 'init', [ $instance, 'check_for_custom_endpoints' ], 0 );
+		add_action( 'init', [ $instance, 'add_rewrite_rules' ], 1 );
+		add_filter( 'query_vars', [ $instance, 'add_query_vars' ] );
+		add_action( 'template_redirect', [ $instance, 'handle_request' ], 1 );
+	}
+
+	/**
+	 * Constructor.
+	 *
+	 * Private to enforce use of init() method.
+	 */
+	private function __construct() {
+		// No side effects - hooks are registered in init().
 	}
 
 	/**
@@ -182,8 +205,8 @@ class TGP_Endpoint_Handler {
 		$this->send_rate_limit_headers( $rate_info );
 
 		// Generate markdown
-		$converter   = new TGP_Markdown_Converter();
-		$frontmatter = new TGP_Frontmatter( $post );
+		$converter   = new MarkdownConverter();
+		$frontmatter = new Frontmatter( $post );
 
 		// Output text/markdown - escaping not needed for plain text output.
 		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -203,7 +226,7 @@ class TGP_Endpoint_Handler {
 		// Check rate limit before processing.
 		$rate_info = $this->check_rate_limit();
 
-		$generator = new TGP_LLMs_Txt_Generator();
+		$generator = new Generator();
 
 		header( 'Content-Type: text/plain; charset=utf-8' );
 		header( 'X-Content-Type-Options: nosniff' );

@@ -16,6 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use TGP\LLMsTxt\Blocks\SVGSanitizer;
+
 // Ensure we're inside a blog-filters block.
 if ( ! array_key_exists( 'tgp/blogFilters', $block->context ) ) {
 	return '';
@@ -47,7 +49,7 @@ $wrapper_attrs = get_block_wrapper_attributes(
 	<div class="wp-block-tgp-blog-search__wrapper">
 		<?php if ( $show_icon ) : ?>
 		<span class="wp-block-tgp-blog-search__icon" aria-hidden="true">
-			<?php echo wp_kses( $search_icon, TGP_SVG_Sanitizer::get_allowed_tags() ); ?>
+			<?php echo wp_kses( $search_icon, SVGSanitizer::get_allowed_tags() ); ?>
 		</span>
 		<?php endif; ?>
 

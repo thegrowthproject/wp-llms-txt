@@ -10,7 +10,7 @@ namespace TGP\LLMsTxt\Tests;
 use PHPUnit\Framework\TestCase;
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use TGP_Button_Block_Renderer;
+use TGP\LLMsTxt\Blocks\ButtonRenderer;
 
 /**
  * Test class for TGP_Button_Block_Renderer.
@@ -46,7 +46,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'gradient'        => 'vivid-cyan-blue-to-vivid-purple',
 		];
 
-		$result = TGP_Button_Block_Renderer::get_style_attributes( $attributes );
+		$result = ButtonRenderer::get_style_attributes( $attributes );
 
 		$this->assertEquals( 'primary', $result['bg_color_slug'] );
 		$this->assertEquals( 'white', $result['text_color_slug'] );
@@ -67,7 +67,7 @@ class ButtonBlockRendererTest extends TestCase {
 			],
 		];
 
-		$result = TGP_Button_Block_Renderer::get_style_attributes( $attributes );
+		$result = ButtonRenderer::get_style_attributes( $attributes );
 
 		$this->assertEquals( '#ff0000', $result['custom_bg_color'] );
 		$this->assertEquals( '#ffffff', $result['custom_text_color'] );
@@ -92,7 +92,7 @@ class ButtonBlockRendererTest extends TestCase {
 			],
 		];
 
-		$result = TGP_Button_Block_Renderer::get_style_attributes( $attributes );
+		$result = ButtonRenderer::get_style_attributes( $attributes );
 
 		$this->assertEquals( '16px', $result['font_size'] );
 		$this->assertEquals( '1.5', $result['line_height'] );
@@ -120,7 +120,7 @@ class ButtonBlockRendererTest extends TestCase {
 			],
 		];
 
-		$result = TGP_Button_Block_Renderer::get_style_attributes( $attributes );
+		$result = ButtonRenderer::get_style_attributes( $attributes );
 
 		$this->assertIsArray( $result['padding'] );
 		$this->assertEquals( '10px', $result['padding']['top'] );
@@ -142,7 +142,7 @@ class ButtonBlockRendererTest extends TestCase {
 			],
 		];
 
-		$result = TGP_Button_Block_Renderer::get_style_attributes( $attributes );
+		$result = ButtonRenderer::get_style_attributes( $attributes );
 
 		$this->assertIsArray( $result['border'] );
 		$this->assertEquals( '8px', $result['border']['radius'] );
@@ -155,7 +155,7 @@ class ButtonBlockRendererTest extends TestCase {
 	public function test_get_style_variation_detects_fill(): void {
 		$wrapper = 'class="wp-block-button is-style-fill"';
 
-		$result = TGP_Button_Block_Renderer::get_style_variation( $wrapper );
+		$result = ButtonRenderer::get_style_variation( $wrapper );
 
 		$this->assertEquals( 'fill', $result['variation'] );
 		$this->assertFalse( $result['has_variation'] );
@@ -167,7 +167,7 @@ class ButtonBlockRendererTest extends TestCase {
 	public function test_get_style_variation_detects_outline(): void {
 		$wrapper = 'class="wp-block-button is-style-outline"';
 
-		$result = TGP_Button_Block_Renderer::get_style_variation( $wrapper );
+		$result = ButtonRenderer::get_style_variation( $wrapper );
 
 		$this->assertEquals( 'outline', $result['variation'] );
 		$this->assertTrue( $result['has_variation'] );
@@ -179,7 +179,7 @@ class ButtonBlockRendererTest extends TestCase {
 	public function test_get_style_variation_defaults_to_fill(): void {
 		$wrapper = 'class="wp-block-button"';
 
-		$result = TGP_Button_Block_Renderer::get_style_variation( $wrapper );
+		$result = ButtonRenderer::get_style_variation( $wrapper );
 
 		$this->assertEquals( 'fill', $result['variation'] );
 		$this->assertFalse( $result['has_variation'] );
@@ -193,7 +193,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'width' => null,
 		];
 
-		$result = TGP_Button_Block_Renderer::build_outer_classes( $style_attrs, 'outline' );
+		$result = ButtonRenderer::build_outer_classes( $style_attrs, 'outline' );
 
 		$this->assertContains( 'wp-block-button', $result );
 		$this->assertContains( 'is-style-outline', $result );
@@ -207,7 +207,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'width' => 50,
 		];
 
-		$result = TGP_Button_Block_Renderer::build_outer_classes( $style_attrs, 'fill' );
+		$result = ButtonRenderer::build_outer_classes( $style_attrs, 'fill' );
 
 		$this->assertContains( 'has-custom-width', $result );
 		$this->assertContains( 'wp-block-button__width-50', $result );
@@ -226,7 +226,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'custom_gradient'   => null,
 		];
 
-		$result = TGP_Button_Block_Renderer::build_inner_classes(
+		$result = ButtonRenderer::build_inner_classes(
 			$style_attrs,
 			'wp-block-tgp-test',
 			false
@@ -251,7 +251,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'custom_gradient'   => null,
 		];
 
-		$result = TGP_Button_Block_Renderer::build_inner_classes(
+		$result = ButtonRenderer::build_inner_classes(
 			$style_attrs,
 			'wp-block-tgp-test',
 			true
@@ -281,7 +281,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'custom_gradient'   => null,
 		];
 
-		$result = TGP_Button_Block_Renderer::build_inline_styles( $style_attrs, false );
+		$result = ButtonRenderer::build_inline_styles( $style_attrs, false );
 
 		$this->assertStringContainsString( 'font-size: 16px', $result );
 		$this->assertStringContainsString( 'line-height: 1.5', $result );
@@ -310,7 +310,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'custom_gradient'   => null,
 		];
 
-		$result = TGP_Button_Block_Renderer::build_inline_styles( $style_attrs, false );
+		$result = ButtonRenderer::build_inline_styles( $style_attrs, false );
 
 		$this->assertStringContainsString( 'border-radius: 8px', $result );
 	}
@@ -342,7 +342,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'custom_gradient'   => null,
 		];
 
-		$result = TGP_Button_Block_Renderer::build_inline_styles( $style_attrs, false );
+		$result = ButtonRenderer::build_inline_styles( $style_attrs, false );
 
 		$this->assertStringContainsString( 'border-radius: 4px 8px 4px 8px', $result );
 	}
@@ -367,7 +367,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'custom_gradient'   => null,
 		];
 
-		$result = TGP_Button_Block_Renderer::get_style_attribute( $style_attrs, false );
+		$result = ButtonRenderer::get_style_attribute( $style_attrs, false );
 
 		$this->assertStringStartsWith( ' style="', $result );
 		$this->assertStringContainsString( 'font-size: 16px', $result );
@@ -393,7 +393,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'custom_gradient'   => null,
 		];
 
-		$result = TGP_Button_Block_Renderer::get_style_attribute( $style_attrs, false );
+		$result = ButtonRenderer::get_style_attribute( $style_attrs, false );
 
 		$this->assertEquals( '', $result );
 	}
@@ -402,61 +402,61 @@ class ButtonBlockRendererTest extends TestCase {
 	 * Test is_valid_css_color accepts hex colors.
 	 */
 	public function test_is_valid_css_color_accepts_hex_colors(): void {
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( '#fff' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( '#FFF' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( '#ffffff' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( '#FFFFFF' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( '#ff00ff00' ) ); // With alpha.
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( '#fff' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( '#FFF' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( '#ffffff' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( '#FFFFFF' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( '#ff00ff00' ) ); // With alpha.
 	}
 
 	/**
 	 * Test is_valid_css_color accepts rgb/rgba colors.
 	 */
 	public function test_is_valid_css_color_accepts_rgb_colors(): void {
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'rgb(255, 0, 0)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'rgba(255, 0, 0, 0.5)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'rgb(100%, 0%, 0%)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'rgba(255 0 0 / 50%)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'rgb(255, 0, 0)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'rgba(255, 0, 0, 0.5)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'rgb(100%, 0%, 0%)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'rgba(255 0 0 / 50%)' ) );
 	}
 
 	/**
 	 * Test is_valid_css_color accepts hsl/hsla colors.
 	 */
 	public function test_is_valid_css_color_accepts_hsl_colors(): void {
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'hsl(120, 100%, 50%)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'hsla(120, 100%, 50%, 0.5)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'hsl(120deg, 100%, 50%)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'hsl(120, 100%, 50%)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'hsla(120, 100%, 50%, 0.5)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'hsl(120deg, 100%, 50%)' ) );
 	}
 
 	/**
 	 * Test is_valid_css_color accepts named colors.
 	 */
 	public function test_is_valid_css_color_accepts_named_colors(): void {
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'red' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'blue' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'transparent' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'currentcolor' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'inherit' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'red' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'blue' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'transparent' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'currentcolor' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'inherit' ) );
 	}
 
 	/**
 	 * Test is_valid_css_color accepts CSS variables.
 	 */
 	public function test_is_valid_css_color_accepts_css_variables(): void {
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'var(--wp--preset--color--primary)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'var(--my-color)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_color( 'var(--color, #fff)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'var(--wp--preset--color--primary)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'var(--my-color)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_color( 'var(--color, #fff)' ) );
 	}
 
 	/**
 	 * Test is_valid_css_color rejects invalid colors.
 	 */
 	public function test_is_valid_css_color_rejects_invalid_colors(): void {
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_color( '' ) );
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_color( null ) );
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_color( 123 ) );
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_color( '#gg0000' ) ); // Invalid hex.
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_color( 'notacolor' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_color( '' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_color( null ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_color( 123 ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_color( '#gg0000' ) ); // Invalid hex.
+		$this->assertFalse( ButtonRenderer::is_valid_css_color( 'notacolor' ) );
 	}
 
 	/**
@@ -464,55 +464,55 @@ class ButtonBlockRendererTest extends TestCase {
 	 */
 	public function test_is_valid_css_color_rejects_injection_attempts(): void {
 		// CSS injection attempts.
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_color( 'red; background: url(evil.com)' ) );
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_color( 'red} body { display: none' ) );
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_color( 'expression(alert(1))' ) );
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_color( 'url(javascript:alert(1))' ) );
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_color( '<script>alert(1)</script>' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_color( 'red; background: url(evil.com)' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_color( 'red} body { display: none' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_color( 'expression(alert(1))' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_color( 'url(javascript:alert(1))' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_color( '<script>alert(1)</script>' ) );
 	}
 
 	/**
 	 * Test is_valid_css_gradient accepts linear gradients.
 	 */
 	public function test_is_valid_css_gradient_accepts_linear_gradients(): void {
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_gradient( 'linear-gradient(90deg, #f00, #00f)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_gradient( 'linear-gradient(to right, red, blue)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_gradient( 'repeating-linear-gradient(45deg, #f00, #00f 10px)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_gradient( 'linear-gradient(90deg, #f00, #00f)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_gradient( 'linear-gradient(to right, red, blue)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_gradient( 'repeating-linear-gradient(45deg, #f00, #00f 10px)' ) );
 	}
 
 	/**
 	 * Test is_valid_css_gradient accepts radial gradients.
 	 */
 	public function test_is_valid_css_gradient_accepts_radial_gradients(): void {
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_gradient( 'radial-gradient(circle, red, blue)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_gradient( 'radial-gradient(ellipse at center, #f00, #00f)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_gradient( 'repeating-radial-gradient(circle, red, blue 10px)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_gradient( 'radial-gradient(circle, red, blue)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_gradient( 'radial-gradient(ellipse at center, #f00, #00f)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_gradient( 'repeating-radial-gradient(circle, red, blue 10px)' ) );
 	}
 
 	/**
 	 * Test is_valid_css_gradient accepts conic gradients.
 	 */
 	public function test_is_valid_css_gradient_accepts_conic_gradients(): void {
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_gradient( 'conic-gradient(red, blue)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_gradient( 'conic-gradient(from 45deg, red, blue)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_gradient( 'conic-gradient(red, blue)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_gradient( 'conic-gradient(from 45deg, red, blue)' ) );
 	}
 
 	/**
 	 * Test is_valid_css_gradient accepts CSS variables.
 	 */
 	public function test_is_valid_css_gradient_accepts_css_variables(): void {
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_gradient( 'var(--wp--preset--gradient--vivid)' ) );
-		$this->assertTrue( TGP_Button_Block_Renderer::is_valid_css_gradient( 'var(--my-gradient)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_gradient( 'var(--wp--preset--gradient--vivid)' ) );
+		$this->assertTrue( ButtonRenderer::is_valid_css_gradient( 'var(--my-gradient)' ) );
 	}
 
 	/**
 	 * Test is_valid_css_gradient rejects invalid gradients.
 	 */
 	public function test_is_valid_css_gradient_rejects_invalid_gradients(): void {
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_gradient( '' ) );
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_gradient( null ) );
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_gradient( '#ff0000' ) ); // Not a gradient.
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_gradient( 'red' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_gradient( '' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_gradient( null ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_gradient( '#ff0000' ) ); // Not a gradient.
+		$this->assertFalse( ButtonRenderer::is_valid_css_gradient( 'red' ) );
 	}
 
 	/**
@@ -520,8 +520,8 @@ class ButtonBlockRendererTest extends TestCase {
 	 */
 	public function test_is_valid_css_gradient_rejects_injection_attempts(): void {
 		// CSS injection attempts.
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_gradient( 'linear-gradient(red, blue); background: url(evil)' ) );
-		$this->assertFalse( TGP_Button_Block_Renderer::is_valid_css_gradient( 'linear-gradient(red, blue)} body { display: none' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_gradient( 'linear-gradient(red, blue); background: url(evil)' ) );
+		$this->assertFalse( ButtonRenderer::is_valid_css_gradient( 'linear-gradient(red, blue)} body { display: none' ) );
 	}
 
 	/**
@@ -544,7 +544,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'custom_gradient'   => null,
 		];
 
-		$result = TGP_Button_Block_Renderer::build_inline_styles( $style_attrs, false );
+		$result = ButtonRenderer::build_inline_styles( $style_attrs, false );
 
 		$this->assertStringContainsString( 'background-color: #ff0000', $result );
 		$this->assertStringContainsString( 'color: #ffffff', $result );
@@ -570,7 +570,7 @@ class ButtonBlockRendererTest extends TestCase {
 			'custom_gradient'   => null,
 		];
 
-		$result = TGP_Button_Block_Renderer::build_inline_styles( $style_attrs, false );
+		$result = ButtonRenderer::build_inline_styles( $style_attrs, false );
 
 		// Invalid colors should not appear in output.
 		$this->assertStringNotContainsString( 'background-color:', $result );

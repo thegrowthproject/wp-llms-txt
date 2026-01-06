@@ -4,13 +4,22 @@
  *
  * Converts WordPress Gutenberg block content to clean markdown
  * suitable for LLM consumption.
+ *
+ * @package TGP_LLMs_Txt
  */
+
+declare(strict_types=1);
+
+namespace TGP\LLMsTxt;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TGP_Markdown_Converter {
+/**
+ * Markdown Converter class.
+ */
+class MarkdownConverter {
 
 	/**
 	 * Convert post content to markdown

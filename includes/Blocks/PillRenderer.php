@@ -5,7 +5,7 @@
  * Shared rendering logic for pill/toggle blocks (blog-category-filter).
  * Handles two-state styling: active and inactive pills with style switching.
  *
- * Key difference from TGP_Button_Block_Renderer:
+ * Key difference from ButtonRenderer:
  * - Supports active/inactive states with different styles
  * - Uses marker classes for conditional CSS custom properties
  * - Typography and border-radius apply to BOTH states
@@ -13,6 +13,10 @@
  *
  * @package TGP_LLMs_Txt
  */
+
+declare(strict_types=1);
+
+namespace TGP\LLMsTxt\Blocks;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -23,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Consolidates rendering logic for toggleable pill-style blocks.
  */
-class TGP_Pill_Block_Renderer {
+class PillRenderer {
 
 	/**
 	 * Default inactive style class.
@@ -89,7 +93,7 @@ class TGP_Pill_Block_Renderer {
 		$text       = null;
 
 		// Handle custom background color with validation.
-		if ( $style_attrs['bg_color_custom'] && TGP_Button_Block_Renderer::is_valid_css_color( $style_attrs['bg_color_custom'] ) ) {
+		if ( $style_attrs['bg_color_custom'] && ButtonRenderer::is_valid_css_color( $style_attrs['bg_color_custom'] ) ) {
 			$background = $style_attrs['bg_color_custom'];
 		} elseif ( $style_attrs['bg_color_preset'] ) {
 			// Preset colors use safe CSS variable references.
@@ -97,7 +101,7 @@ class TGP_Pill_Block_Renderer {
 		}
 
 		// Handle custom text color with validation.
-		if ( $style_attrs['text_color_custom'] && TGP_Button_Block_Renderer::is_valid_css_color( $style_attrs['text_color_custom'] ) ) {
+		if ( $style_attrs['text_color_custom'] && ButtonRenderer::is_valid_css_color( $style_attrs['text_color_custom'] ) ) {
 			$text = $style_attrs['text_color_custom'];
 		} elseif ( $style_attrs['text_color_preset'] ) {
 			// Preset colors use safe CSS variable references.
@@ -254,7 +258,7 @@ class TGP_Pill_Block_Renderer {
 			if ( isset( $border['style'] ) ) {
 				$styles[] = '--tgp-active-border-style: ' . $border['style'];
 			}
-			if ( isset( $border['color'] ) && TGP_Button_Block_Renderer::is_valid_css_color( $border['color'] ) ) {
+			if ( isset( $border['color'] ) && ButtonRenderer::is_valid_css_color( $border['color'] ) ) {
 				$styles[] = '--tgp-active-border-color: ' . $border['color'];
 			}
 		}

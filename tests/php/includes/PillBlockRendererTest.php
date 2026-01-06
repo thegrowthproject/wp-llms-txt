@@ -10,7 +10,7 @@ namespace TGP\LLMsTxt\Tests;
 use PHPUnit\Framework\TestCase;
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use TGP_Pill_Block_Renderer;
+use TGP\LLMsTxt\Blocks\PillRenderer;
 
 /**
  * Test class for TGP_Pill_Block_Renderer.
@@ -45,7 +45,7 @@ class PillBlockRendererTest extends TestCase {
 			'textColor'       => 'white',
 		];
 
-		$result = TGP_Pill_Block_Renderer::get_style_attributes( $attributes );
+		$result = PillRenderer::get_style_attributes( $attributes );
 
 		$this->assertEquals( 'primary', $result['bg_color_preset'] );
 		$this->assertEquals( 'white', $result['text_color_preset'] );
@@ -64,7 +64,7 @@ class PillBlockRendererTest extends TestCase {
 			],
 		];
 
-		$result = TGP_Pill_Block_Renderer::get_style_attributes( $attributes );
+		$result = PillRenderer::get_style_attributes( $attributes );
 
 		$this->assertEquals( '#ff0000', $result['bg_color_custom'] );
 		$this->assertEquals( '#ffffff', $result['text_color_custom'] );
@@ -83,7 +83,7 @@ class PillBlockRendererTest extends TestCase {
 			],
 		];
 
-		$result = TGP_Pill_Block_Renderer::get_style_attributes( $attributes );
+		$result = PillRenderer::get_style_attributes( $attributes );
 
 		$this->assertEquals( '14px', $result['font_size'] );
 		$this->assertEquals( '600', $result['font_weight'] );
@@ -100,7 +100,7 @@ class PillBlockRendererTest extends TestCase {
 			'text_color_preset' => 'white',
 		];
 
-		$result = TGP_Pill_Block_Renderer::resolve_colors( $style_attrs );
+		$result = PillRenderer::resolve_colors( $style_attrs );
 
 		$this->assertEquals( '#ff0000', $result['background'] );
 		$this->assertEquals( '#ffffff', $result['text'] );
@@ -117,7 +117,7 @@ class PillBlockRendererTest extends TestCase {
 			'text_color_preset' => 'white',
 		];
 
-		$result = TGP_Pill_Block_Renderer::resolve_colors( $style_attrs );
+		$result = PillRenderer::resolve_colors( $style_attrs );
 
 		$this->assertEquals( 'var(--wp--preset--color--primary)', $result['background'] );
 		$this->assertEquals( 'var(--wp--preset--color--white)', $result['text'] );
@@ -134,7 +134,7 @@ class PillBlockRendererTest extends TestCase {
 			'text_color_preset' => null,
 		];
 
-		$result = TGP_Pill_Block_Renderer::resolve_colors( $style_attrs );
+		$result = PillRenderer::resolve_colors( $style_attrs );
 
 		$this->assertNull( $result['background'] );
 		$this->assertNull( $result['text'] );
@@ -146,7 +146,7 @@ class PillBlockRendererTest extends TestCase {
 	public function test_get_style_variation_detects_button_brand(): void {
 		$wrapper = 'class="wp-block-tgp-test is-style-button-brand"';
 
-		$result = TGP_Pill_Block_Renderer::get_style_variation( $wrapper );
+		$result = PillRenderer::get_style_variation( $wrapper );
 
 		$this->assertEquals( 'button-brand', $result );
 	}
@@ -157,7 +157,7 @@ class PillBlockRendererTest extends TestCase {
 	public function test_get_style_variation_defaults_to_button_brand(): void {
 		$wrapper = 'class="wp-block-tgp-test"';
 
-		$result = TGP_Pill_Block_Renderer::get_style_variation( $wrapper );
+		$result = PillRenderer::get_style_variation( $wrapper );
 
 		$this->assertEquals( 'button-brand', $result );
 	}
@@ -166,7 +166,7 @@ class PillBlockRendererTest extends TestCase {
 	 * Test build_pill_wrapper_classes returns correct classes.
 	 */
 	public function test_build_pill_wrapper_classes(): void {
-		$result = TGP_Pill_Block_Renderer::build_pill_wrapper_classes();
+		$result = PillRenderer::build_pill_wrapper_classes();
 
 		$this->assertContains( 'wp-block-button', $result );
 		$this->assertContains( 'is-style-secondary-button', $result );
@@ -176,7 +176,7 @@ class PillBlockRendererTest extends TestCase {
 	 * Test build_button_classes includes base class.
 	 */
 	public function test_build_button_classes(): void {
-		$result = TGP_Pill_Block_Renderer::build_button_classes( 'my-custom-class' );
+		$result = PillRenderer::build_button_classes( 'my-custom-class' );
 
 		$this->assertContains( 'wp-block-button__link', $result );
 		$this->assertContains( 'wp-element-button', $result );
@@ -199,7 +199,7 @@ class PillBlockRendererTest extends TestCase {
 			'border'          => null,
 		];
 
-		$result = TGP_Pill_Block_Renderer::build_button_styles( $style_attrs );
+		$result = PillRenderer::build_button_styles( $style_attrs );
 
 		$this->assertStringContainsString( 'font-size: 14px', $result );
 		$this->assertStringContainsString( 'line-height: 1.4', $result );
@@ -225,7 +225,7 @@ class PillBlockRendererTest extends TestCase {
 			],
 		];
 
-		$result = TGP_Pill_Block_Renderer::build_button_styles( $style_attrs );
+		$result = PillRenderer::build_button_styles( $style_attrs );
 
 		$this->assertStringContainsString( 'border-radius: 20px', $result );
 	}
@@ -251,7 +251,7 @@ class PillBlockRendererTest extends TestCase {
 			'border'          => null,
 		];
 
-		$result = TGP_Pill_Block_Renderer::build_button_styles( $style_attrs );
+		$result = PillRenderer::build_button_styles( $style_attrs );
 
 		$this->assertStringContainsString( 'padding-top: 8px', $result );
 		$this->assertStringContainsString( 'padding-right: 16px', $result );
@@ -273,7 +273,7 @@ class PillBlockRendererTest extends TestCase {
 			'text'       => '#ffffff',
 		];
 
-		$result = TGP_Pill_Block_Renderer::build_active_state_styles( $style_attrs, $colors );
+		$result = PillRenderer::build_active_state_styles( $style_attrs, $colors );
 
 		$this->assertContains( 'has-custom-active-bg', $result['classes'] );
 		$this->assertContains( 'has-custom-active-text', $result['classes'] );
@@ -294,7 +294,7 @@ class PillBlockRendererTest extends TestCase {
 			'text'       => '#ffffff',
 		];
 
-		$result = TGP_Pill_Block_Renderer::build_active_state_styles( $style_attrs, $colors );
+		$result = PillRenderer::build_active_state_styles( $style_attrs, $colors );
 
 		$this->assertContains( '--tgp-active-bg: #ff0000', $result['styles'] );
 		$this->assertContains( '--tgp-active-text: #ffffff', $result['styles'] );
@@ -315,7 +315,7 @@ class PillBlockRendererTest extends TestCase {
 			'text'       => null,
 		];
 
-		$result = TGP_Pill_Block_Renderer::build_active_state_styles( $style_attrs, $colors );
+		$result = PillRenderer::build_active_state_styles( $style_attrs, $colors );
 
 		$this->assertContains( '--tgp-active-border-width: 2px', $result['styles'] );
 		$this->assertContains( '--tgp-active-border-style: solid', $result['styles'] );
@@ -325,7 +325,7 @@ class PillBlockRendererTest extends TestCase {
 	 * Test get_style_classes returns correct classes.
 	 */
 	public function test_get_style_classes(): void {
-		$result = TGP_Pill_Block_Renderer::get_style_classes( 'button-dark' );
+		$result = PillRenderer::get_style_classes( 'button-dark' );
 
 		$this->assertEquals( 'is-style-button-dark', $result['active'] );
 		$this->assertEquals( 'is-style-secondary-button', $result['inactive'] );
@@ -338,7 +338,7 @@ class PillBlockRendererTest extends TestCase {
 		$wrapper = 'class="wp-block-test"';
 		$classes = [ 'has-custom-active-bg', 'has-custom-active-text' ];
 
-		$result = TGP_Pill_Block_Renderer::inject_marker_classes( $wrapper, $classes );
+		$result = PillRenderer::inject_marker_classes( $wrapper, $classes );
 
 		$this->assertStringContainsString( 'has-custom-active-bg', $result );
 		$this->assertStringContainsString( 'has-custom-active-text', $result );
@@ -351,7 +351,7 @@ class PillBlockRendererTest extends TestCase {
 		$wrapper = 'class="wp-block-test"';
 		$classes = [];
 
-		$result = TGP_Pill_Block_Renderer::inject_marker_classes( $wrapper, $classes );
+		$result = PillRenderer::inject_marker_classes( $wrapper, $classes );
 
 		$this->assertEquals( $wrapper, $result );
 	}
@@ -372,7 +372,7 @@ class PillBlockRendererTest extends TestCase {
 			'border'          => null,
 		];
 
-		$result = TGP_Pill_Block_Renderer::get_button_style_attribute( $style_attrs );
+		$result = PillRenderer::get_button_style_attribute( $style_attrs );
 
 		$this->assertStringStartsWith( ' style="', $result );
 		$this->assertStringContainsString( 'font-size: 14px', $result );
@@ -387,7 +387,7 @@ class PillBlockRendererTest extends TestCase {
 			'classes' => [ 'has-custom-active-bg' ],
 		];
 
-		$result = TGP_Pill_Block_Renderer::get_wrapper_style_attribute( $active_styles );
+		$result = PillRenderer::get_wrapper_style_attribute( $active_styles );
 
 		$this->assertStringStartsWith( ' style="', $result );
 		$this->assertStringContainsString( '--tgp-active-bg: #ff0000', $result );

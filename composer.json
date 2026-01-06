@@ -20,6 +20,11 @@
         "brain/monkey": "^2.6",
         "mockery/mockery": "^1.6"
     },
+    "autoload": {
+        "psr-4": {
+            "TGP\\LLMsTxt\\": "includes/"
+        }
+    },
     "autoload-dev": {
         "psr-4": {
             "TGP\\LLMsTxt\\Tests\\": "tests/php/"

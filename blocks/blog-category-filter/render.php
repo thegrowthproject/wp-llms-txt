@@ -16,6 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use TGP\LLMsTxt\Blocks\PillRenderer;
+
 // Ensure we're inside a blog-filters block.
 if ( ! array_key_exists( 'tgp/blogFilters', $block->context ) ) {
 	return '';
@@ -39,30 +41,30 @@ if ( empty( $categories ) ) {
 }
 
 // Extract styles using shared helper.
-$style_attrs = TGP_Pill_Block_Renderer::get_style_attributes( $attributes );
-$colors      = TGP_Pill_Block_Renderer::resolve_colors( $style_attrs );
+$style_attrs = PillRenderer::get_style_attributes( $attributes );
+$colors      = PillRenderer::resolve_colors( $style_attrs );
 
 // Get wrapper attributes and detect style variation.
 $wrapper_attrs_string = get_block_wrapper_attributes();
-$style_variation      = TGP_Pill_Block_Renderer::get_style_variation( $wrapper_attrs_string );
-$style_classes        = TGP_Pill_Block_Renderer::get_style_classes( $style_variation );
+$style_variation      = PillRenderer::get_style_variation( $wrapper_attrs_string );
+$style_classes        = PillRenderer::get_style_classes( $style_variation );
 
 // Build active-state styles (colors, border, shadow).
-$active_styles = TGP_Pill_Block_Renderer::build_active_state_styles( $style_attrs, $colors );
+$active_styles = PillRenderer::build_active_state_styles( $style_attrs, $colors );
 
 // Inject marker classes for conditional CSS.
-$wrapper_attrs_string = TGP_Pill_Block_Renderer::inject_marker_classes(
+$wrapper_attrs_string = PillRenderer::inject_marker_classes(
 	$wrapper_attrs_string,
 	$active_styles['classes']
 );
 
 // Get wrapper and button style attributes.
-$wrapper_style_attr = TGP_Pill_Block_Renderer::get_wrapper_style_attribute( $active_styles );
-$button_style_attr  = TGP_Pill_Block_Renderer::get_button_style_attribute( $style_attrs );
+$wrapper_style_attr = PillRenderer::get_wrapper_style_attribute( $active_styles );
+$button_style_attr  = PillRenderer::get_button_style_attribute( $style_attrs );
 
 // Build class strings.
-$pill_wrapper_classes = TGP_Pill_Block_Renderer::build_pill_wrapper_classes();
-$button_classes       = TGP_Pill_Block_Renderer::build_button_classes( 'wp-block-tgp-blog-category-filter__pill' );
+$pill_wrapper_classes = PillRenderer::build_pill_wrapper_classes();
+$button_classes       = PillRenderer::build_button_classes( 'wp-block-tgp-blog-category-filter__pill' );
 
 $pill_wrapper_class_string = implode( ' ', $pill_wrapper_classes );
 $button_class_string       = implode( ' ', $button_classes );

@@ -3,27 +3,36 @@
  * YAML Frontmatter Generator
  *
  * Generates YAML frontmatter for markdown output
+ *
+ * @package TGP_LLMs_Txt
  */
+
+declare(strict_types=1);
+
+namespace TGP\LLMsTxt;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TGP_Frontmatter {
+/**
+ * Frontmatter class.
+ */
+class Frontmatter {
 
 	/**
 	 * The post object.
 	 *
-	 * @var WP_Post
+	 * @var \WP_Post
 	 */
-	private WP_Post $post;
+	private \WP_Post $post;
 
 	/**
 	 * Constructor
 	 *
-	 * @param WP_Post $post The post object.
+	 * @param \WP_Post $post The post object.
 	 */
-	public function __construct( WP_Post $post ) {
+	public function __construct( \WP_Post $post ) {
 		$this->post = $post;
 	}
 
@@ -120,7 +129,7 @@ class TGP_Frontmatter {
 		if ( ! empty( $categories ) ) {
 			// Try to get primary category (if Yoast or similar is installed)
 			if ( class_exists( 'WPSEO_Primary_Term' ) ) {
-				$primary_term = new WPSEO_Primary_Term( 'category', $this->post->ID );
+				$primary_term = new \WPSEO_Primary_Term( 'category', $this->post->ID );
 				$primary_term_id = $primary_term->get_primary_term();
 				if ( $primary_term_id ) {
 					$term = get_term( $primary_term_id );
