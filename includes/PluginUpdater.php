@@ -105,8 +105,8 @@ class PluginUpdater {
 	/**
 	 * Check for plugin updates.
 	 *
-	 * @param object $transient The update_plugins transient object.
-	 * @return object Modified transient.
+	 * @param mixed $transient The update_plugins transient object.
+	 * @return mixed Modified transient.
 	 */
 	public function check_for_update( mixed $transient ): mixed {
 		if ( empty( $transient->checked ) ) {
@@ -348,8 +348,8 @@ class PluginUpdater {
 	/**
 	 * Clear cached update data after plugin update.
 	 *
-	 * @param \WP_Upgrader $upgrader   The upgrader instance.
-	 * @param array        $hook_extra Extra hook arguments.
+	 * @param object $upgrader   The upgrader instance.
+	 * @param array  $hook_extra Extra hook arguments.
 	 */
 	public function clear_cache( object $upgrader, array $hook_extra ): void {
 		if ( 'plugin' === ( $hook_extra['type'] ?? '' ) && 'update' === ( $hook_extra['action'] ?? '' ) ) {

@@ -28,7 +28,7 @@ class ButtonRenderer {
 	 *
 	 * Accepts hex colors, rgb/rgba, hsl/hsla, CSS color names, and CSS variables.
 	 *
-	 * @param string $color The color value to validate.
+	 * @param mixed $color The color value to validate.
 	 * @return bool True if the color value is valid, false otherwise.
 	 */
 	public static function is_valid_css_color( mixed $color ): bool {
@@ -64,7 +64,7 @@ class ButtonRenderer {
 	/**
 	 * Validate a CSS gradient value.
 	 *
-	 * @param string $gradient The gradient value to validate.
+	 * @param mixed $gradient The gradient value to validate.
 	 * @return bool True if the gradient value is valid, false otherwise.
 	 */
 	public static function is_valid_css_gradient( mixed $gradient ): bool {

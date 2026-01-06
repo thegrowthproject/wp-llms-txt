@@ -139,7 +139,10 @@ class LoggerTest extends TestCase {
 		$method     = $reflection->getMethod( 'format' );
 		$method->setAccessible( true );
 
-		$context = [ 'ip' => '192.168.1.1', 'path' => '/test' ];
+		$context = [
+			'ip'   => '192.168.1.1',
+			'path' => '/test',
+		];
 		Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
 
 		$result = $method->invoke( null, 'WARNING', 'Test message', $context );

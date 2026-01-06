@@ -398,8 +398,11 @@ class EndpointHandler {
 		header( 'X-RateLimit-Remaining: 0' );
 		header( 'X-RateLimit-Reset: ' . $reset_time );
 
+		// Plain text output - escaping not needed for static strings and integers.
+		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo "# 429 Too Many Requests\n\n";
-		echo "Rate limit exceeded. Please retry after {$retry_after} seconds.";
+		echo 'Rate limit exceeded. Please retry after ' . (int) $retry_after . ' seconds.';
+		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 		exit;
 	}
 }
