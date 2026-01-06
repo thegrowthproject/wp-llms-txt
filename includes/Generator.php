@@ -44,9 +44,10 @@ class Generator {
 	/**
 	 * Constructor.
 	 *
-	 * Private to enforce use of init() method.
+	 * Public to allow direct instantiation for content generation.
+	 * The init() method is used separately to register hooks.
 	 */
-	private function __construct() {
+	public function __construct() {
 		// No side effects - hooks are registered in init().
 	}
 
