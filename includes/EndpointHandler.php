@@ -212,7 +212,7 @@ class EndpointHandler {
 		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo $frontmatter->generate();
 		echo "\n\n";
-		echo '# ' . get_the_title( $post ) . "\n\n";
+		echo '# ' . $this->escape_markdown( get_the_title( $post ) ) . "\n\n";
 		echo $converter->convert( $post->post_content );
 		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 
@@ -370,6 +370,31 @@ class EndpointHandler {
 		header( 'X-RateLimit-Limit: ' . $rate_info['limit'] );
 		header( 'X-RateLimit-Remaining: ' . $rate_info['remaining'] );
 		header( 'X-RateLimit-Reset: ' . $rate_info['reset'] );
+	}
+
+	/**
+	 * Escape a string for safe use in markdown output.
+	 *
+	 * Escapes special markdown characters that could cause formatting issues
+	 * when used in headings or other contexts.
+	 *
+	 * @param string $text The text to escape.
+	 * @return string The escaped text.
+	 */
+	private function escape_markdown( string $text ): string {
+		// Remove newlines/carriage returns (would break headings).
+		$text = str_replace( [ "\r\n", "\r", "\n" ], ' ', $text );
+
+		// Escape backslashes first.
+		$text = str_replace( '\\', '\\\\', $text );
+
+		// Escape markdown special characters.
+		$special_chars = [ '*', '_', '`', '[', ']', '<', '>', '#' ];
+		foreach ( $special_chars as $char ) {
+			$text = str_replace( $char, '\\' . $char, $text );
+		}
+
+		return $text;
 	}
 
 	/**

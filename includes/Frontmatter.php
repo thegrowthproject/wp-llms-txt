@@ -177,16 +177,30 @@ class Frontmatter {
 	/**
 	 * Escape YAML value if needed.
 	 *
+	 * Follows YAML 1.2 spec for double-quoted scalar escaping.
+	 * Backslashes must be escaped first, then other special characters.
+	 *
 	 * @param string $value The value to escape.
 	 * @return string The escaped value.
 	 */
 	private function escape_yaml_value( string $value ): string {
-		// If value contains special characters, wrap in quotes
-		if ( preg_match( '/[:\[\]{}#&*!|>\'"%@`]/', $value ) ||
-			preg_match( '/^[\s]|[\s]$/', $value ) ) {
-			// Escape double quotes and wrap
-			$value = '"' . str_replace( '"', '\\"', $value ) . '"';
+		// Check if value needs quoting: special chars, leading/trailing whitespace,
+		// control characters, or could be interpreted as YAML type (true, false, null, numbers).
+		$needs_quoting = preg_match( '/[:\[\]{}#&*!|>\'"%@`\n\r\t\\\\]/', $value ) ||
+			preg_match( '/^[\s]|[\s]$/', $value ) ||
+			preg_match( '/^(true|false|yes|no|null|~|\d+\.?\d*|0x[0-9a-f]+|0o[0-7]+)$/i', $value ) ||
+			'' === $value;
+
+		if ( $needs_quoting ) {
+			// YAML spec: escape backslashes first, then other characters.
+			$value = str_replace( '\\', '\\\\', $value );
+			$value = str_replace( '"', '\\"', $value );
+			$value = str_replace( "\n", '\\n', $value );
+			$value = str_replace( "\r", '\\r', $value );
+			$value = str_replace( "\t", '\\t', $value );
+			$value = '"' . $value . '"';
 		}
+
 		return $value;
 	}
 }
