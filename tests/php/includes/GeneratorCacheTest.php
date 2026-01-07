@@ -105,7 +105,9 @@ class GeneratorCacheTest extends TestCase {
 		$generator = new Generator();
 		$result    = $generator->generate();
 
-		$this->assertStringContainsString( '# Test Site - llms.txt', $result );
+		$this->assertStringContainsString( '# Test Site', $result );
+		$this->assertStringContainsString( '> Test Site', $result );
+		$this->assertStringContainsString( 'Last Updated:', $result );
 	}
 
 	/**

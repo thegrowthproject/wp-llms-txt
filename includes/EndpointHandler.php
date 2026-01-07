@@ -54,8 +54,8 @@ class EndpointHandler {
 		$path = wp_parse_url( $request_uri, PHP_URL_PATH );
 		$path = rtrim( $path, '/' );
 
-		// Check for llms.txt
-		if ( preg_match( '/\/llms\.txt$/i', $path ) ) {
+		// Check for llms.txt - only match root /llms.txt, not /blog/slug/llms.txt
+		if ( '/llms.txt' === strtolower( $path ) ) {
 			$this->serve_llms_txt();
 			exit;
 		}
@@ -97,9 +97,9 @@ class EndpointHandler {
 			'top'
 		);
 
-		// Match /llms.txt
+		// Match /llms.txt (root only)
 		add_rewrite_rule(
-			'llms\.txt$',
+			'^llms\.txt$',
 			'index.php?tgp_llms_txt=1',
 			'top'
 		);

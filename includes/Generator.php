@@ -9,6 +9,8 @@
  * - tgp_llms_txt_description: Custom site description paragraph
  * - tgp_llms_txt_contact_url: Contact page URL (default: /contact/)
  * - tgp_llms_txt_pages: Array of page slugs and descriptions to include
+ * - tgp_llms_txt_posts_limit: Maximum number of posts to include (default: 50)
+ * - tgp_llms_txt_exclude_categories: Array of category slugs to exclude
  *
  * @package TGP_LLMs_Txt
  */
@@ -92,16 +94,15 @@ class Generator {
 		$site_name        = get_bloginfo( 'name' );
 		$site_description = get_bloginfo( 'description' );
 		$site_url         = home_url();
+		$last_updated     = gmdate( 'Y-m-d' );
 
-		$output  = "# {$site_name} - llms.txt\n";
-		$output .= "# {$site_url}/llms.txt\n";
-		$output .= "#\n";
-		$output .= "# This file helps AI systems understand and access our content.\n";
-		$output .= "# Add .md to any URL to get the markdown version.\n";
-		$output .= "#\n";
-		$output .= "# Standard: https://llmstxt.org/\n\n";
-
+		$output  = "# {$site_name}\n\n";
 		$output .= "> {$site_description}\n\n";
+		$output .= "This file helps AI systems understand and access our content.\n";
+		$output .= "Add .md to any URL to get the markdown version.\n\n";
+		$output .= "- Standard: https://llmstxt.org/\n";
+		$output .= "- Last Updated: {$last_updated}\n";
+		$output .= "- Website: {$site_url}\n\n";
 
 		/**
 		 * Filters the custom description paragraph in llms.txt.
@@ -128,7 +129,6 @@ class Generator {
 
 		// Contact section.
 		$output .= "## Contact\n\n";
-		$output .= "- Website: {$site_url}\n";
 
 		/**
 		 * Filters the contact page URL path in llms.txt.
@@ -138,7 +138,7 @@ class Generator {
 		 * @param string $contact_path The contact page path. Default '/contact/'.
 		 */
 		$contact_path = apply_filters( 'tgp_llms_txt_contact_url', '/contact/' );
-		$output      .= "- Contact: {$site_url}{$contact_path}\n";
+		$output      .= "- Contact Page: {$site_url}{$contact_path}\n";
 
 		// Cache the generated content.
 		set_transient( self::CACHE_KEY, $output, self::CACHE_EXPIRATION );
@@ -202,15 +202,47 @@ class Generator {
 	private function get_posts_section(): string {
 		$output = '';
 
-		// Get all published posts with their categories in a single query.
-		$all_posts = get_posts(
-			[
-				'posts_per_page' => -1,
-				'orderby'        => 'date',
-				'order'          => 'DESC',
-				'post_status'    => 'publish',
-			]
-		);
+		/**
+		 * Filters the maximum number of posts to include in llms.txt.
+		 *
+		 * @since 1.3.4
+		 *
+		 * @param int $limit Maximum number of posts. Default 50. Use -1 for unlimited.
+		 */
+		$posts_limit = apply_filters( 'tgp_llms_txt_posts_limit', 50 );
+
+		/**
+		 * Filters the categories to exclude from llms.txt.
+		 *
+		 * @since 1.3.4
+		 *
+		 * @param array $exclude_categories Array of category slugs to exclude.
+		 */
+		$exclude_categories = apply_filters( 'tgp_llms_txt_exclude_categories', [] );
+
+		// Build query args.
+		$query_args = [
+			'posts_per_page' => $posts_limit,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'post_status'    => 'publish',
+		];
+
+		// Exclude categories if specified.
+		if ( ! empty( $exclude_categories ) ) {
+			$exclude_ids = [];
+			foreach ( $exclude_categories as $slug ) {
+				$term = get_term_by( 'slug', $slug, 'category' );
+				if ( $term ) {
+					$exclude_ids[] = $term->term_id;
+				}
+			}
+			if ( ! empty( $exclude_ids ) ) {
+				$query_args['category__not_in'] = $exclude_ids;
+			}
+		}
+
+		$all_posts = get_posts( $query_args );
 
 		if ( empty( $all_posts ) ) {
 			return $output;
@@ -288,9 +320,10 @@ class Generator {
 		$url     = get_permalink( $post );
 		$md_url  = $this->get_md_url( $url );
 		$title   = get_the_title( $post );
+		$date    = get_the_date( 'Y-m-d', $post );
 		$excerpt = $this->get_short_excerpt( $post );
 
-		return "- [{$title}]({$md_url}): {$excerpt}\n";
+		return "- [{$title}]({$md_url}) ({$date}): {$excerpt}\n";
 	}
 
 	/**

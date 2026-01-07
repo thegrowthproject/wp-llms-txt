@@ -73,6 +73,51 @@ add_filter( 'tgp_llms_txt_pages', function( $pages ) {
 
 ---
 
+### `tgp_llms_txt_posts_limit`
+
+Filter the maximum number of posts to include in the llms.txt output.
+
+**Since:** 1.3.4
+
+**Parameters:**
+- `$limit` (int) Maximum number of posts. Default 50. Use -1 for unlimited.
+
+**Example:**
+
+```php
+// Limit to 20 most recent posts
+add_filter( 'tgp_llms_txt_posts_limit', function( $limit ) {
+    return 20;
+} );
+
+// Include all posts (not recommended for large sites)
+add_filter( 'tgp_llms_txt_posts_limit', function( $limit ) {
+    return -1;
+} );
+```
+
+---
+
+### `tgp_llms_txt_exclude_categories`
+
+Filter the categories to exclude from the llms.txt output.
+
+**Since:** 1.3.4
+
+**Parameters:**
+- `$exclude_categories` (array) Array of category slugs to exclude. Default empty.
+
+**Example:**
+
+```php
+// Exclude internal and draft categories
+add_filter( 'tgp_llms_txt_exclude_categories', function( $categories ) {
+    return [ 'internal', 'drafts', 'uncategorized' ];
+} );
+```
+
+---
+
 ### `tgp_llms_txt_rate_limit`
 
 Filter the rate limit for LLMs.txt endpoints (requests per minute).
