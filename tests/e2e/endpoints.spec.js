@@ -24,7 +24,7 @@ test.describe( 'LLMs.txt endpoint', () => {
 		// Should contain expected content structure.
 		const content = await response.text();
 		expect( content ).toContain( '# ' ); // Site name header.
-		expect( content ).toContain( 'llms.txt' );
+		expect( content ).toContain( 'Last Updated:' ); // Timestamp.
 		expect( content ).toContain( 'https://llmstxt.org/' ); // Standard reference.
 	} );
 
