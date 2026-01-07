@@ -3,7 +3,7 @@
  * Plugin Name: TGP LLMs.txt
  * Plugin URI: https://thegrowthproject.com
  * Description: Provides markdown endpoints for AI/LLM consumption. Adds .md URLs, /llms.txt index, and "Copy for LLM" buttons.
- * Version: 1.3.2
+ * Version: 1.3.3
  * Requires at least: 6.5
  * Author: The Growth Project
  * Author URI: https://thegrowthproject.com
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TGP_LLMS_VERSION', '1.3.2' );
+define( 'TGP_LLMS_VERSION', '1.3.3' );
 define( 'TGP_LLMS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TGP_LLMS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 

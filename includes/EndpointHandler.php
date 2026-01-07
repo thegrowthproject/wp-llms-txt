@@ -42,7 +42,7 @@ class EndpointHandler {
 	 * Private to enforce use of init() method.
 	 */
 	private function __construct() {
-		// No side effects - hooks are registered in init().
+		$this->rate_limiter = new RateLimiter();
 	}
 
 	/**
@@ -129,18 +129,11 @@ class EndpointHandler {
 	private ?string $md_slug = null;
 
 	/**
-	 * Default rate limit (requests per minute).
+	 * Rate limiter instance.
 	 *
-	 * @var int
+	 * @var RateLimiter
 	 */
-	private int $default_rate_limit = 100;
-
-	/**
-	 * Rate limit window in seconds.
-	 *
-	 * @var int
-	 */
-	private int $rate_limit_window = 60;
+	private RateLimiter $rate_limiter;
 
 	/**
 	 * Handle markdown requests
@@ -169,7 +162,7 @@ class EndpointHandler {
 		global $post;
 
 		// Check rate limit before processing.
-		$rate_info = $this->check_rate_limit();
+		$rate_info = $this->rate_limiter->check();
 
 		// Get slug from our stored value.
 		$post_name = $this->md_slug;
@@ -202,7 +195,7 @@ class EndpointHandler {
 		header( 'Content-Type: text/markdown; charset=utf-8' );
 		header( 'X-Content-Type-Options: nosniff' );
 		header( 'Cache-Control: public, max-age=3600' ); // Cache for 1 hour.
-		$this->send_rate_limit_headers( $rate_info );
+		$this->rate_limiter->send_headers( $rate_info );
 
 		// Generate markdown
 		$converter   = new MarkdownConverter();
@@ -212,7 +205,7 @@ class EndpointHandler {
 		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo $frontmatter->generate();
 		echo "\n\n";
-		echo '# ' . get_the_title( $post ) . "\n\n";
+		echo '# ' . $this->escape_markdown( get_the_title( $post ) ) . "\n\n";
 		echo $converter->convert( $post->post_content );
 		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 
@@ -224,14 +217,14 @@ class EndpointHandler {
 	 */
 	private function serve_llms_txt(): void {
 		// Check rate limit before processing.
-		$rate_info = $this->check_rate_limit();
+		$rate_info = $this->rate_limiter->check();
 
 		$generator = new Generator();
 
 		header( 'Content-Type: text/plain; charset=utf-8' );
 		header( 'X-Content-Type-Options: nosniff' );
 		header( 'Cache-Control: public, max-age=3600' );
-		$this->send_rate_limit_headers( $rate_info );
+		$this->rate_limiter->send_headers( $rate_info );
 
 		// Plain text output - escaping not needed.
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -249,7 +242,7 @@ class EndpointHandler {
 			'Markdown endpoint not found',
 			[
 				'slug'       => $this->md_slug,
-				'request_ip' => $this->get_client_ip(),
+				'request_ip' => $this->rate_limiter->get_client_ip(),
 			]
 		);
 
@@ -263,146 +256,27 @@ class EndpointHandler {
 	}
 
 	/**
-	 * Check and enforce rate limiting.
+	 * Escape a string for safe use in markdown output.
 	 *
-	 * Uses transient-based IP tracking to limit requests per minute.
-	 * Sends 429 response if rate limit exceeded.
+	 * Escapes special markdown characters that could cause formatting issues
+	 * when used in headings or other contexts.
 	 *
-	 * @return array{limit: int, remaining: int, reset: int} Rate limit info for headers.
+	 * @param string $text The text to escape.
+	 * @return string The escaped text.
 	 */
-	private function check_rate_limit(): array {
-		$ip            = $this->get_client_ip();
-		$transient_key = 'tgp_llms_rate_' . md5( $ip );
+	private function escape_markdown( string $text ): string {
+		// Remove newlines/carriage returns (would break headings).
+		$text = str_replace( [ "\r\n", "\r", "\n" ], ' ', $text );
 
-		// Get current request count and timestamp.
-		$rate_data = get_transient( $transient_key );
+		// Escape backslashes first.
+		$text = str_replace( '\\', '\\\\', $text );
 
-		if ( false === $rate_data ) {
-			$rate_data = [
-				'count' => 0,
-				'start' => time(),
-			];
+		// Escape markdown special characters.
+		$special_chars = [ '*', '_', '`', '[', ']', '<', '>', '#' ];
+		foreach ( $special_chars as $char ) {
+			$text = str_replace( $char, '\\' . $char, $text );
 		}
 
-		/**
-		 * Filter the rate limit for LLMs.txt endpoints.
-		 *
-		 * @param int    $limit The maximum requests per minute. Default 100.
-		 * @param string $ip    The client IP address.
-		 */
-		$limit = (int) apply_filters( 'tgp_llms_txt_rate_limit', $this->default_rate_limit, $ip );
-
-		// Calculate time until reset.
-		$elapsed    = time() - $rate_data['start'];
-		$reset_time = $rate_data['start'] + $this->rate_limit_window;
-
-		// If window has passed, reset the counter.
-		if ( $elapsed >= $this->rate_limit_window ) {
-			$rate_data = [
-				'count' => 0,
-				'start' => time(),
-			];
-			$reset_time = time() + $this->rate_limit_window;
-		}
-
-		// Increment request count.
-		++$rate_data['count'];
-
-		// Calculate remaining requests.
-		$remaining = max( 0, $limit - $rate_data['count'] );
-
-		// Store updated count.
-		set_transient( $transient_key, $rate_data, $this->rate_limit_window );
-
-		// Check if over limit.
-		if ( $rate_data['count'] > $limit ) {
-			$this->send_rate_limit_exceeded( $limit, $reset_time );
-		}
-
-		return [
-			'limit'     => $limit,
-			'remaining' => $remaining,
-			'reset'     => $reset_time,
-		];
-	}
-
-	/**
-	 * Get client IP address.
-	 *
-	 * Checks for proxy headers in a safe order.
-	 *
-	 * @return string The client IP address.
-	 */
-	private function get_client_ip(): string {
-		// Check for forwarded IP (reverse proxy/load balancer).
-		// Only trust these headers if behind a trusted proxy.
-		$forwarded_headers = [
-			'HTTP_X_FORWARDED_FOR',
-			'HTTP_X_REAL_IP',
-			'HTTP_CLIENT_IP',
-		];
-
-		foreach ( $forwarded_headers as $header ) {
-			if ( ! empty( $_SERVER[ $header ] ) ) {
-				// X-Forwarded-For can contain multiple IPs; get the first one.
-				$ip = sanitize_text_field( wp_unslash( $_SERVER[ $header ] ) );
-				$ip = explode( ',', $ip )[0];
-				$ip = trim( $ip );
-
-				if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
-					return $ip;
-				}
-			}
-		}
-
-		// Fall back to REMOTE_ADDR.
-		return isset( $_SERVER['REMOTE_ADDR'] )
-			? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) )
-			: '0.0.0.0';
-	}
-
-	/**
-	 * Send rate limit headers.
-	 *
-	 * @param array{limit: int, remaining: int, reset: int} $rate_info Rate limit information.
-	 */
-	private function send_rate_limit_headers( array $rate_info ): void {
-		header( 'X-RateLimit-Limit: ' . $rate_info['limit'] );
-		header( 'X-RateLimit-Remaining: ' . $rate_info['remaining'] );
-		header( 'X-RateLimit-Reset: ' . $rate_info['reset'] );
-	}
-
-	/**
-	 * Send 429 Too Many Requests response.
-	 *
-	 * @param int $limit      The rate limit.
-	 * @param int $reset_time Unix timestamp when the rate limit resets.
-	 */
-	private function send_rate_limit_exceeded( int $limit, int $reset_time ): void {
-		$retry_after = max( 1, $reset_time - time() );
-		$client_ip   = $this->get_client_ip();
-
-		Logger::warning(
-			'Rate limit exceeded',
-			[
-				'ip'          => $client_ip,
-				'limit'       => $limit,
-				'retry_after' => $retry_after,
-			]
-		);
-
-		status_header( 429 );
-		header( 'Content-Type: text/plain; charset=utf-8' );
-		header( 'Retry-After: ' . $retry_after );
-		header( 'X-RateLimit-Limit: ' . $limit );
-		header( 'X-RateLimit-Remaining: 0' );
-		header( 'X-RateLimit-Reset: ' . $reset_time );
-
-		// Plain text output - escaping not needed for static strings and integers.
-		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo "# 429 Too Many Requests\n\n";
-		echo 'Rate limit exceeded. Please retry after ' . (int) $retry_after . ' seconds.';
-		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
-		exit;
+		return $text;
 	}
 }

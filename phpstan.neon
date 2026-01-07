@@ -1,0 +1,23 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - includes/
+        - tgp-llms-txt.php
+    excludePaths:
+        - vendor/
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+    parallel:
+        maximumNumberOfProcesses: 1
+    ignoreErrors:
+        # WordPress transient returns mixed types
+        - '#Access to an undefined property object::\$(response|no_update)#'
+        # WordPress author meta type
+        - '#Parameter \#2 \$user_id of function get_the_author_meta expects int\|false#'
+        # Plugin hook callback return type
+        - '#Action callback returns .* but should not return anything#'
+        # Variable is always truthy check
+        - '#Variable \$styles in empty\(\) always exists#'

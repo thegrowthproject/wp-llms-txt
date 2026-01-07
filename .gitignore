@@ -9,7 +9,7 @@ node_modules/
 vendor/
 
 # Composer
-composer.lock
+# composer.lock is tracked for reproducible builds
 
 # IDE
 .idea/

@@ -5,6 +5,7 @@ on:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
+  workflow_dispatch:
 
 jobs:
   e2e:
@@ -43,6 +44,32 @@ jobs:
         run: |
           echo "Waiting for WordPress to be ready..."
           timeout 60 bash -c 'until curl -s http://localhost:8888 > /dev/null; do sleep 2; done'
+
+      - name: Activate plugin and set up permalinks
+        run: |
+          npm run wp-env run cli wp plugin activate wp-llms-txt
+          npm run wp-env run cli wp rewrite structure '/%postname%/'
+          # Create .htaccess in wordpress container (port 8888) - wp rewrite flush doesn't create it in Docker
+          npm run wp-env run wordpress -- bash -c 'cat > /var/www/html/.htaccess << "HTACCESS"
+          # BEGIN WordPress
+          <IfModule mod_rewrite.c>
+          RewriteEngine On
+          RewriteBase /
+          RewriteRule ^index\.php$ - [L]
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule . /index.php [L]
+          </IfModule>
+          # END WordPress
+          HTACCESS'
+
+      - name: Verify plugin is active
+        run: |
+          npm run wp-env run cli wp plugin list
+          echo "Checking .htaccess content in wordpress container..."
+          npm run wp-env run wordpress -- cat /var/www/html/.htaccess || echo "File not found"
+          echo "Testing /llms.txt endpoint..."
+          curl -v http://localhost:8888/llms.txt || true
 
       - name: Run E2E tests
         run: npm run test:e2e

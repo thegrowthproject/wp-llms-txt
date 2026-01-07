@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+# Git commit-msg hook to reject AI attribution in commit messages.
+# Per CLAUDE.md: "No AI attribution — Do not add Generated with Claude Code or Co-Authored-By lines"
+#
+
+COMMIT_MSG_FILE=$1
+
+# Check for Claude Code attribution patterns
+if grep -qiE "Generated with \[?Claude" "$COMMIT_MSG_FILE"; then
+    echo "ERROR: Commit message contains 'Generated with Claude' attribution."
+    echo "Per CLAUDE.md, AI attribution should not be included in commits."
+    echo ""
+    echo "Remove the attribution line and try again."
+    exit 1
+fi
+
+if grep -qiE "Co-Authored-By:.*Claude" "$COMMIT_MSG_FILE"; then
+    echo "ERROR: Commit message contains 'Co-Authored-By: Claude' attribution."
+    echo "Per CLAUDE.md, AI attribution should not be included in commits."
+    echo ""
+    echo "Remove the Co-Authored-By line and try again."
+    exit 1
+fi
+
+if grep -qiE "Co-Authored-By:.*Anthropic" "$COMMIT_MSG_FILE"; then
+    echo "ERROR: Commit message contains Anthropic Co-Authored-By attribution."
+    echo "Per CLAUDE.md, AI attribution should not be included in commits."
+    echo ""
+    echo "Remove the Co-Authored-By line and try again."
+    exit 1
+fi
+
+exit 0

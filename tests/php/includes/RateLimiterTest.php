@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for TGP_Endpoint_Handler rate limiting.
+ * Tests for RateLimiter class.
  *
  * @package TGP_LLMs_Txt
  */
@@ -10,28 +10,19 @@ namespace TGP\LLMsTxt\Tests;
 use PHPUnit\Framework\TestCase;
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use TGP\LLMsTxt\EndpointHandler;
-use ReflectionClass;
-use ReflectionMethod;
+use TGP\LLMsTxt\RateLimiter;
 
 /**
- * Test class for TGP_Endpoint_Handler rate limiting.
+ * Test class for RateLimiter.
  */
-class EndpointHandlerRateLimitTest extends TestCase {
+class RateLimiterTest extends TestCase {
 
 	/**
-	 * The handler instance.
+	 * The rate limiter instance.
 	 *
-	 * @var EndpointHandler
+	 * @var RateLimiter
 	 */
-	private EndpointHandler $handler;
-
-	/**
-	 * Reflection class for accessing private methods.
-	 *
-	 * @var ReflectionClass
-	 */
-	private ReflectionClass $reflection;
+	private RateLimiter $rate_limiter;
 
 	/**
 	 * Set up test environment.
@@ -44,14 +35,10 @@ class EndpointHandlerRateLimitTest extends TestCase {
 		$_SERVER = [];
 
 		// Mock WordPress functions.
-		Functions\when( 'add_action' )->justReturn( true );
-		Functions\when( 'add_filter' )->justReturn( true );
 		Functions\when( 'sanitize_text_field' )->returnArg();
 		Functions\when( 'wp_unslash' )->returnArg();
 
-		// Create handler instance (constructor calls hooks, which we've mocked).
-		$this->reflection = new ReflectionClass( EndpointHandler::class );
-		$this->handler    = $this->reflection->newInstanceWithoutConstructor();
+		$this->rate_limiter = new RateLimiter();
 	}
 
 	/**
@@ -64,25 +51,12 @@ class EndpointHandlerRateLimitTest extends TestCase {
 	}
 
 	/**
-	 * Get a private method for testing.
-	 *
-	 * @param string $method_name Method name.
-	 * @return ReflectionMethod
-	 */
-	private function get_private_method( string $method_name ): ReflectionMethod {
-		$method = $this->reflection->getMethod( $method_name );
-		$method->setAccessible( true );
-		return $method;
-	}
-
-	/**
 	 * Test get_client_ip returns REMOTE_ADDR when no proxy headers.
 	 */
 	public function test_get_client_ip_returns_remote_addr(): void {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 
-		$method = $this->get_private_method( 'get_client_ip' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->get_client_ip();
 
 		$this->assertEquals( '192.168.1.100', $result );
 	}
@@ -91,8 +65,7 @@ class EndpointHandlerRateLimitTest extends TestCase {
 	 * Test get_client_ip returns default when no IP available.
 	 */
 	public function test_get_client_ip_returns_default_when_empty(): void {
-		$method = $this->get_private_method( 'get_client_ip' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->get_client_ip();
 
 		$this->assertEquals( '0.0.0.0', $result );
 	}
@@ -104,8 +77,7 @@ class EndpointHandlerRateLimitTest extends TestCase {
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = '10.0.0.1';
 		$_SERVER['REMOTE_ADDR']          = '192.168.1.100';
 
-		$method = $this->get_private_method( 'get_client_ip' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->get_client_ip();
 
 		$this->assertEquals( '10.0.0.1', $result );
 	}
@@ -117,8 +89,7 @@ class EndpointHandlerRateLimitTest extends TestCase {
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = '10.0.0.1, 10.0.0.2, 10.0.0.3';
 		$_SERVER['REMOTE_ADDR']          = '192.168.1.100';
 
-		$method = $this->get_private_method( 'get_client_ip' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->get_client_ip();
 
 		// Should return the first IP (client IP).
 		$this->assertEquals( '10.0.0.1', $result );
@@ -131,8 +102,7 @@ class EndpointHandlerRateLimitTest extends TestCase {
 		$_SERVER['HTTP_X_REAL_IP'] = '10.0.0.5';
 		$_SERVER['REMOTE_ADDR']    = '192.168.1.100';
 
-		$method = $this->get_private_method( 'get_client_ip' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->get_client_ip();
 
 		$this->assertEquals( '10.0.0.5', $result );
 	}
@@ -144,8 +114,7 @@ class EndpointHandlerRateLimitTest extends TestCase {
 		$_SERVER['HTTP_CLIENT_IP'] = '10.0.0.10';
 		$_SERVER['REMOTE_ADDR']    = '192.168.1.100';
 
-		$method = $this->get_private_method( 'get_client_ip' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->get_client_ip();
 
 		$this->assertEquals( '10.0.0.10', $result );
 	}
@@ -157,8 +126,7 @@ class EndpointHandlerRateLimitTest extends TestCase {
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = 'invalid-ip-address';
 		$_SERVER['REMOTE_ADDR']          = '192.168.1.100';
 
-		$method = $this->get_private_method( 'get_client_ip' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->get_client_ip();
 
 		// Invalid IP should fall through to REMOTE_ADDR.
 		$this->assertEquals( '192.168.1.100', $result );
@@ -170,24 +138,24 @@ class EndpointHandlerRateLimitTest extends TestCase {
 	public function test_get_client_ip_handles_ipv6(): void {
 		$_SERVER['REMOTE_ADDR'] = '2001:db8::1';
 
-		$method = $this->get_private_method( 'get_client_ip' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->get_client_ip();
 
 		$this->assertEquals( '2001:db8::1', $result );
 	}
 
 	/**
-	 * Test check_rate_limit creates new rate data on first request.
+	 * Test check creates new rate data on first request.
 	 */
-	public function test_check_rate_limit_creates_new_rate_data(): void {
+	public function test_check_creates_new_rate_data(): void {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 
-		Functions\when( 'get_transient' )->justReturn( false );
-		Functions\expect( 'set_transient' )
+		Functions\when( 'wp_cache_get' )->justReturn( false );
+		Functions\expect( 'wp_cache_set' )
 			->once()
 			->andReturnUsing(
-				function ( $key, $value, $expiration ) {
+				function ( $key, $value, $group, $expiration ) {
 					$this->assertStringStartsWith( 'tgp_llms_rate_', $key );
+					$this->assertEquals( 'tgp_llms_txt', $group );
 					$this->assertEquals( 1, $value['count'] );
 					$this->assertEquals( 60, $expiration );
 					return true;
@@ -198,8 +166,7 @@ class EndpointHandlerRateLimitTest extends TestCase {
 			->with( 'tgp_llms_txt_rate_limit', 100, '192.168.1.100' )
 			->andReturn( 100 );
 
-		$method = $this->get_private_method( 'check_rate_limit' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->check();
 
 		$this->assertEquals( 100, $result['limit'] );
 		$this->assertEquals( 99, $result['remaining'] );
@@ -207,54 +174,53 @@ class EndpointHandlerRateLimitTest extends TestCase {
 	}
 
 	/**
-	 * Test check_rate_limit increments existing count.
+	 * Test check increments existing count.
 	 */
-	public function test_check_rate_limit_increments_count(): void {
+	public function test_check_increments_count(): void {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 		$start_time             = time();
 
-		Functions\when( 'get_transient' )->justReturn(
+		Functions\when( 'wp_cache_get' )->justReturn(
 			[
 				'count' => 10,
 				'start' => $start_time,
 			]
 		);
-		Functions\expect( 'set_transient' )
+		Functions\expect( 'wp_cache_set' )
 			->once()
 			->andReturnUsing(
 				// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Mock callback signature.
-				function ( $key, $value, $expiration ) {
+				function ( $key, $value, $group, $expiration ) {
 					$this->assertEquals( 11, $value['count'] );
 					return true;
 				}
 			);
 		Functions\when( 'apply_filters' )->justReturn( 100 );
 
-		$method = $this->get_private_method( 'check_rate_limit' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->check();
 
 		$this->assertEquals( 100, $result['limit'] );
 		$this->assertEquals( 89, $result['remaining'] ); // 100 - 11.
 	}
 
 	/**
-	 * Test check_rate_limit resets counter after window expires.
+	 * Test check resets counter after window expires.
 	 */
-	public function test_check_rate_limit_resets_after_window(): void {
+	public function test_check_resets_after_window(): void {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 		$old_start              = time() - 120; // 2 minutes ago.
 
-		Functions\when( 'get_transient' )->justReturn(
+		Functions\when( 'wp_cache_get' )->justReturn(
 			[
 				'count' => 50,
 				'start' => $old_start,
 			]
 		);
-		Functions\expect( 'set_transient' )
+		Functions\expect( 'wp_cache_set' )
 			->once()
 			->andReturnUsing(
 				// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Mock callback signature.
-				function ( $key, $value, $expiration ) {
+				function ( $key, $value, $group, $expiration ) {
 					// Count should be reset to 1 (this request).
 					$this->assertEquals( 1, $value['count'] );
 					// Start time should be current.
@@ -264,75 +230,71 @@ class EndpointHandlerRateLimitTest extends TestCase {
 			);
 		Functions\when( 'apply_filters' )->justReturn( 100 );
 
-		$method = $this->get_private_method( 'check_rate_limit' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->check();
 
 		$this->assertEquals( 99, $result['remaining'] ); // 100 - 1 after reset.
 	}
 
 	/**
-	 * Test check_rate_limit respects filter for custom limit.
+	 * Test check respects filter for custom limit.
 	 */
-	public function test_check_rate_limit_respects_filter(): void {
+	public function test_check_respects_filter(): void {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 
-		Functions\when( 'get_transient' )->justReturn( false );
-		Functions\when( 'set_transient' )->justReturn( true );
+		Functions\when( 'wp_cache_get' )->justReturn( false );
+		Functions\when( 'wp_cache_set' )->justReturn( true );
 		Functions\expect( 'apply_filters' )
 			->once()
 			->with( 'tgp_llms_txt_rate_limit', 100, '192.168.1.100' )
 			->andReturn( 50 ); // Custom lower limit.
 
-		$method = $this->get_private_method( 'check_rate_limit' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->check();
 
 		$this->assertEquals( 50, $result['limit'] );
 		$this->assertEquals( 49, $result['remaining'] );
 	}
 
 	/**
-	 * Test check_rate_limit returns zero remaining when at limit.
+	 * Test check returns zero remaining when at limit.
 	 */
-	public function test_check_rate_limit_zero_remaining_at_limit(): void {
+	public function test_check_zero_remaining_at_limit(): void {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 		$start_time             = time();
 
-		Functions\when( 'get_transient' )->justReturn(
+		Functions\when( 'wp_cache_get' )->justReturn(
 			[
 				'count' => 99, // Will be incremented to 100.
 				'start' => $start_time,
 			]
 		);
-		Functions\when( 'set_transient' )->justReturn( true );
+		Functions\when( 'wp_cache_set' )->justReturn( true );
 		Functions\when( 'apply_filters' )->justReturn( 100 );
 
-		$method = $this->get_private_method( 'check_rate_limit' );
-		$result = $method->invoke( $this->handler );
+		$result = $this->rate_limiter->check();
 
 		$this->assertEquals( 0, $result['remaining'] );
 	}
 
 	/**
-	 * Test rate limit uses consistent transient key for same IP.
+	 * Test rate limit uses consistent cache key for same IP.
 	 */
 	public function test_rate_limit_uses_consistent_key(): void {
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 		$expected_key           = 'tgp_llms_rate_' . md5( '192.168.1.100' );
 
-		Functions\when( 'get_transient' )->justReturn( false );
-		Functions\expect( 'set_transient' )
+		Functions\when( 'wp_cache_get' )->justReturn( false );
+		Functions\expect( 'wp_cache_set' )
 			->once()
 			->andReturnUsing(
 				// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Mock callback signature.
-				function ( $key, $value, $expiration ) use ( $expected_key ) {
+				function ( $key, $value, $group, $expiration ) use ( $expected_key ) {
 					$this->assertEquals( $expected_key, $key );
 					return true;
 				}
 			);
 		Functions\when( 'apply_filters' )->justReturn( 100 );
 
-		$method = $this->get_private_method( 'check_rate_limit' );
-		$method->invoke( $this->handler );
+		$this->rate_limiter->check();
 	}
 
 	/**

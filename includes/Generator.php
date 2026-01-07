@@ -29,6 +29,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Generator {
 
 	/**
+	 * Cache key for llms.txt content.
+	 *
+	 * @var string
+	 */
+	private const CACHE_KEY = 'tgp_llms_txt_content';
+
+	/**
+	 * Cache expiration time in seconds (1 hour).
+	 *
+	 * @var int
+	 */
+	private const CACHE_EXPIRATION = 3600;
+
+	/**
 	 * Initialize the generator.
 	 *
 	 * Creates a new instance and registers all WordPress hooks.
@@ -37,8 +51,10 @@ class Generator {
 	public static function init(): void {
 		$instance = new self();
 
-		// Regenerate on post save.
-		add_action( 'save_post', [ $instance, 'maybe_regenerate' ], 10, 2 );
+		// Invalidate cache on post save/delete.
+		add_action( 'save_post', [ $instance, 'maybe_invalidate_cache' ], 10, 2 );
+		add_action( 'delete_post', [ $instance, 'invalidate_cache' ] );
+		add_action( 'wp_trash_post', [ $instance, 'invalidate_cache' ] );
 	}
 
 	/**
@@ -62,9 +78,17 @@ class Generator {
 	 * - Blog posts grouped by category
 	 * - Contact section
 	 *
+	 * Results are cached for performance. Use invalidate_cache() to clear.
+	 *
 	 * @return string The llms.txt content.
 	 */
 	public function generate(): string {
+		// Check for cached content.
+		$cached = get_transient( self::CACHE_KEY );
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
 		$site_name        = get_bloginfo( 'name' );
 		$site_description = get_bloginfo( 'description' );
 		$site_url         = home_url();
@@ -115,6 +139,9 @@ class Generator {
 		 */
 		$contact_path = apply_filters( 'tgp_llms_txt_contact_url', '/contact/' );
 		$output      .= "- Contact: {$site_url}{$contact_path}\n";
+
+		// Cache the generated content.
+		set_transient( self::CACHE_KEY, $output, self::CACHE_EXPIRATION );
 
 		return $output;
 	}
@@ -167,65 +194,16 @@ class Generator {
 	 * Generates markdown list of published posts grouped by category.
 	 * If no categories exist, posts are listed without grouping.
 	 *
+	 * Optimized to use a single query for all posts, then group in PHP
+	 * to avoid N+1 query problem (1 query instead of 1 + N categories).
+	 *
 	 * @return string Markdown formatted posts section.
 	 */
 	private function get_posts_section(): string {
 		$output = '';
 
-		// Get all categories with posts.
-		$categories = get_categories(
-			[
-				'hide_empty' => true,
-				'orderby'    => 'name',
-				'order'      => 'ASC',
-			]
-		);
-
-		if ( empty( $categories ) ) {
-			// No categories, just list all posts.
-			$output .= $this->get_posts_list();
-		} else {
-			// Group by category.
-			foreach ( $categories as $category ) {
-				$output .= "### {$category->name}\n\n";
-
-				$posts = get_posts(
-					[
-						'category'       => $category->term_id,
-						'posts_per_page' => -1,
-						'orderby'        => 'date',
-						'order'          => 'DESC',
-						'post_status'    => 'publish',
-					]
-				);
-
-				foreach ( $posts as $post ) {
-					$url     = get_permalink( $post );
-					$md_url  = $this->get_md_url( $url );
-					$title   = get_the_title( $post );
-					$excerpt = $this->get_short_excerpt( $post );
-					$output .= "- [{$title}]({$md_url}): {$excerpt}\n";
-				}
-
-				$output .= "\n";
-			}
-		}
-
-		return $output;
-	}
-
-	/**
-	 * Get all posts list without category grouping.
-	 *
-	 * Used as fallback when no categories exist. Lists all published
-	 * posts in descending date order with titles, markdown URLs, and excerpts.
-	 *
-	 * @return string Markdown formatted posts list.
-	 */
-	private function get_posts_list(): string {
-		$output = '';
-
-		$posts = get_posts(
+		// Get all published posts with their categories in a single query.
+		$all_posts = get_posts(
 			[
 				'posts_per_page' => -1,
 				'orderby'        => 'date',
@@ -234,15 +212,85 @@ class Generator {
 			]
 		);
 
-		foreach ( $posts as $post ) {
-			$url = get_permalink( $post );
-			$md_url = $this->get_md_url( $url );
-			$title = get_the_title( $post );
-			$excerpt = $this->get_short_excerpt( $post );
-			$output .= "- [{$title}]({$md_url}): {$excerpt}\n";
+		if ( empty( $all_posts ) ) {
+			return $output;
 		}
 
-		return $output . "\n";
+		// Group posts by their primary category.
+		$posts_by_category = [];
+		$uncategorized     = [];
+
+		foreach ( $all_posts as $post ) {
+			$categories = get_the_category( $post->ID );
+			if ( ! empty( $categories ) ) {
+				// Use first category as primary (WordPress default behavior).
+				$category_name = $categories[0]->name;
+				$category_slug = $categories[0]->slug;
+
+				if ( ! isset( $posts_by_category[ $category_slug ] ) ) {
+					$posts_by_category[ $category_slug ] = [
+						'name'  => $category_name,
+						'posts' => [],
+					];
+				}
+				$posts_by_category[ $category_slug ]['posts'][] = $post;
+			} else {
+				$uncategorized[] = $post;
+			}
+		}
+
+		// Sort categories alphabetically by name.
+		uasort(
+			$posts_by_category,
+			function ( $a, $b ) {
+				return strcasecmp( $a['name'], $b['name'] );
+			}
+		);
+
+		// Output posts grouped by category.
+		if ( empty( $posts_by_category ) ) {
+			// No categories, just list all posts.
+			foreach ( $all_posts as $post ) {
+				$output .= $this->format_post_line( $post );
+			}
+			$output .= "\n";
+		} else {
+			foreach ( $posts_by_category as $category_data ) {
+				$output .= "### {$category_data['name']}\n\n";
+
+				foreach ( $category_data['posts'] as $post ) {
+					$output .= $this->format_post_line( $post );
+				}
+
+				$output .= "\n";
+			}
+
+			// Add uncategorized posts at the end if any.
+			if ( ! empty( $uncategorized ) ) {
+				$output .= "### Uncategorized\n\n";
+				foreach ( $uncategorized as $post ) {
+					$output .= $this->format_post_line( $post );
+				}
+				$output .= "\n";
+			}
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Format a single post line for llms.txt output.
+	 *
+	 * @param \WP_Post $post The post object.
+	 * @return string Formatted markdown line.
+	 */
+	private function format_post_line( \WP_Post $post ): string {
+		$url     = get_permalink( $post );
+		$md_url  = $this->get_md_url( $url );
+		$title   = get_the_title( $post );
+		$excerpt = $this->get_short_excerpt( $post );
+
+		return "- [{$title}]({$md_url}): {$excerpt}\n";
 	}
 
 	/**
@@ -283,17 +331,17 @@ class Generator {
 	}
 
 	/**
-	 * Handle post save for potential llms.txt regeneration.
+	 * Conditionally invalidate cache on post save.
 	 *
-	 * Hooked to 'save_post' action. Currently a placeholder for future
-	 * caching implementation. Filters out autosaves, revisions, and
-	 * non-published posts/pages.
+	 * Hooked to 'save_post' action. Invalidates the llms.txt cache when
+	 * a published post or page is saved. Filters out autosaves, revisions,
+	 * and non-published content.
 	 *
 	 * @param int      $post_id The post ID.
 	 * @param \WP_Post $post    The post object.
 	 */
-	public function maybe_regenerate( int $post_id, \WP_Post $post ): void {
-		// Skip autosaves and revisions
+	public function maybe_invalidate_cache( int $post_id, \WP_Post $post ): void {
+		// Skip autosaves and revisions.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
@@ -302,7 +350,7 @@ class Generator {
 			return;
 		}
 
-		// Only for published posts and pages.
+		// Only invalidate for published posts and pages.
 		if ( 'publish' !== $post->post_status ) {
 			return;
 		}
@@ -311,7 +359,18 @@ class Generator {
 			return;
 		}
 
-		// Could cache the generated content here if needed
-		// For now, llms.txt is generated on-the-fly
+		$this->invalidate_cache();
+	}
+
+	/**
+	 * Invalidate the llms.txt cache.
+	 *
+	 * Deletes the cached llms.txt content, forcing regeneration on next request.
+	 * Can be called directly or hooked to post deletion/trash actions.
+	 *
+	 * @param int|null $post_id Optional post ID (unused, for hook compatibility).
+	 */
+	public function invalidate_cache( ?int $post_id = null ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+		delete_transient( self::CACHE_KEY );
 	}
 }
